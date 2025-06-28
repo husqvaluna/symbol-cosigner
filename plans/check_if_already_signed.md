@@ -1,0 +1,51 @@
+# 自分が署名しているかどうかをチェックする方法
+自分が`TAC4HPWPO5YKPAFXQJMJZ24I25O7PP357S6W72A`である場合。
+対応する公開鍵は`AFDDA0A18E215C4761D38F60C932D1D53158FE134A7FD379D89497000E0BC688`
+
+https://sym-test-03.opening-line.jp:3001/transactions/partial?type=16961&address=TAC4HPWPO5YKPAFXQJMJZ24I25O7PP357S6W72A&pageSize=100&pageNumber=1&order=desc
+
+```json
+{
+	"data": [
+		{
+			"meta": {
+				"height": "0",
+				"hash": "22502A48F4A5AA2F60E1C74E91852AEDF56F39CCB27E86561DDA4B6A4BCF148F",
+				"merkleComponentHash": "0000000000000000000000000000000000000000000000000000000000000000",
+				"index": 0
+			},
+			"transaction": {
+				"size": 264,
+				"signature": "A01AB19FF945879284DC0D016DA3BCD5422232C6AE5D70AF8CA34C058C76A1768E377E90CD2AC5621661F00401926920E37133E0D9FE9D87A7687BF20B626C00",
+				"signerPublicKey": "1D0C551813FF2072B82D0E987A6AAF50EAB0D6F34CDCBA255EA804D9773E3B98",
+				"version": 2,
+				"network": 152,
+				"type": 16961,
+				"maxFee": "57600",
+				"deadline": "83865240381",
+				"transactionsHash": "84E24766BF47CC84DCC00FE265508D569229F8961BC3252B2A5AB58EED66E848",
+				"cosignatures": [
+					{
+						"version": "0",
+						"signerPublicKey": "58100EAE85A7ED2B3655B54101174F0B8BE35A4E0BD5F03F548601E8C42673CB",
+						"signature": "6FBFEAB012251AE02CC05ED98AD643574D4607FF0120D8A9D07FC5BA51A6B7B7DD60DEC988B6FD1C54DEDB6D4725F54004F5FACC86C7EDE9179ED9BA01E7C40D"
+					}
+				]
+			},
+			"id": "685D44D9E46578AFA110E9F6"
+		}
+	],
+	"pagination": {
+		"pageNumber": 1,
+		"pageSize": 100
+	}
+}
+```
+
+イニシエータ
+  `data[].transaction.signerPublicKey`
+
+連署者
+  `data[].transaction.cosignatures[].signerPublicKey`
+
+これらの中に自分の公開鍵が含まれていなければ、未署名と考えて良い。
