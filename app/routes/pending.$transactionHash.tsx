@@ -169,18 +169,14 @@ export default function TransactionDetail() {
               </div>
               <button
                 onClick={handleSignClick}
-                disabled={currentStatus.status === 'signed' || currentStatus.status === 'signing' || currentStatus.status === 'announcing' || currentStatus.status === 'success'}
+                disabled={currentStatus.status === 'signing' || currentStatus.status === 'announcing'}
                 className={`px-6 py-3 font-medium rounded-lg transition-colors ${
-                  currentStatus.status === 'signed' || currentStatus.status === 'success'
-                    ? 'bg-gray-400 text-white cursor-not-allowed'
-                    : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
+                  currentStatus.status === 'signing' || currentStatus.status === 'announcing'
                     ? 'bg-blue-500 text-white cursor-not-allowed'
                     : 'bg-green-600 text-white hover:bg-green-700'
                 }`}
               >
-                {currentStatus.status === 'signed' || currentStatus.status === 'success' 
-                  ? '署名済み' 
-                  : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
+                {currentStatus.status === 'signing' || currentStatus.status === 'announcing'
                   ? '処理中...'
                   : '署名する'
                 }

@@ -61,11 +61,11 @@ export const canSignAtom = atom((get) => {
   const signingState = get(signingStateAtom);
   
   return {
-    canSign: !!(activeAddress && activeNode && signingState.status === 'idle'),
+    canSign: !!(activeAddress && activeNode && signingState.status !== 'signing' && signingState.status !== 'announcing'),
     missingRequirements: [
       ...(!activeAddress ? ['アクティブなアドレスが設定されていません'] : []),
       ...(!activeNode ? ['アクティブなノードが設定されていません'] : []),
-      ...(signingState.status !== 'idle' ? ['別の署名処理が実行中です'] : []),
+      ...(signingState.status === 'signing' || signingState.status === 'announcing' ? ['別の署名処理が実行中です'] : []),
     ],
   };
 });

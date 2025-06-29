@@ -61,16 +61,7 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
     }
   }, [isOpen, resetSigning]);
 
-  // 署名完了時の処理
-  useEffect(() => {
-    if (signingState.status === 'success') {
-      // 少し待ってから自動的にモーダルを閉じる
-      const timer = setTimeout(() => {
-        onClose();
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [signingState.status, onClose]);
+  // 署名完了時の処理は削除（手動でモーダルを閉じる）
 
   // 秘密鍵の安全なクリア
   const clearPrivateKey = () => {
@@ -300,13 +291,13 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
             </button>
             <button
               onClick={handleSign}
-              disabled={!privateKey || isSigning || !!error || !canSign || signingState.status === 'success'}
+              disabled={!privateKey || isSigning || !!error || !canSign}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
               {isSigning && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               )}
-              {signingState.status === 'success' ? "署名完了" : isSigning ? progressMessage : "署名実行"}
+              {isSigning ? progressMessage : "署名実行"}
             </button>
           </div>
         </div>
