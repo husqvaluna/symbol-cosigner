@@ -171,13 +171,13 @@ export default function Pending() {
           ) : transactions.length === 0 ? (
             <div className="text-center py-12 p-6">
               <div className="text-gray-500 text-lg mb-4">
-                {canFetch 
+                {canFetch
                   ? "署名が必要なトランザクションはありません"
                   : "アドレスとノードを選択してください"
                 }
               </div>
               <div className="text-sm text-gray-400">
-                {canFetch 
+                {canFetch
                   ? "アグリゲートトランザクションが作成されると、ここに表示されます"
                   : "設定を行うとトランザクション一覧が表示されます"
                 }
@@ -194,15 +194,12 @@ export default function Pending() {
                           {transaction.hash.substring(0, 16)}...
                         </h3>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                            AggregateBonded
-                          </span>
                           <span className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full">
                             連署: {transaction.cosignatureCount}
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
                           <span className="text-gray-500">トランザクションハッシュ:</span>
@@ -235,7 +232,7 @@ export default function Pending() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="ml-6">
                       <Link
                         to={`/pending/${transaction.hash}`}

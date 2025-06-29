@@ -1,11 +1,11 @@
 /**
  * トランザクション詳細ページ
- * 
+ *
  * 設計方針:
  * - 指定されたハッシュのトランザクション詳細を表示
  * - 署名ボタンで秘密鍵入力モーダルを表示
  * - 既存のUIパターンとJotai使用パターンに準拠
- * 
+ *
  * 関連ファイル:
  * - app/store/transactions.ts
  * - app/components/PrivateKeyModal.tsx
@@ -15,10 +15,11 @@
 import type { Route } from "./+types/pending.$transactionHash";
 import { useParams, Link } from "react-router";
 import { useAtomValue } from "jotai";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Navigation } from "../components/navigation";
 import { transactionsAtom } from "../store/transactions";
 import { signingStateAtom, getSigningCompletedEventAtom } from "../store/signing";
+import { activeAddressAtom } from "../store/addresses";
 import { PrivateKeyModal } from "../components/PrivateKeyModal";
 
 export function meta({ params }: Route.MetaArgs) {
@@ -33,11 +34,18 @@ export default function TransactionDetail() {
   const transactions = useAtomValue(transactionsAtom);
   const signingState = useAtomValue(signingStateAtom);
   const signingCompletedEvent = useAtomValue(getSigningCompletedEventAtom);
+  const activeAddress = useAtomValue(activeAddressAtom);
   const [showPrivateKeyModal, setShowPrivateKeyModal] = useState(false);
   const [hasSignedThisTransaction, setHasSignedThisTransaction] = useState(false);
 
   // 指定されたハッシュのトランザクションを検索
   const transaction = transactions.find(tx => tx.hash === transactionHash);
+
+  // アクティブアドレスが既存の連署者に含まれているかチェック
+  const isAlreadyCosigned = useMemo(() => {
+    if (!activeAddress || !transaction) return false;
+    return transaction.cosignerAddresses.includes(activeAddress.address);
+  }, [activeAddress, transaction]);
 
   // 署名完了イベントの監視
   useEffect(() => {
@@ -67,6 +75,15 @@ export default function TransactionDetail() {
 
   // 署名状態の判定
   const getSigningStatus = () => {
+    // 最優先: 既存連署者チェック
+    if (isAlreadyCosigned) {
+      return {
+        status: 'already_signed',
+        message: 'このアドレスは既に署名済みです',
+        color: 'green',
+      };
+    }
+
     if (hasSignedThisTransaction) {
       return {
         status: 'signed',
@@ -74,7 +91,7 @@ export default function TransactionDetail() {
         color: 'green',
       };
     }
-    
+
     if (signingState.transactionHash === transactionHash) {
       switch (signingState.status) {
         case 'signing':
@@ -103,7 +120,7 @@ export default function TransactionDetail() {
           };
       }
     }
-    
+
     return {
       status: 'pending',
       message: 'このトランザクションにはあなたの署名が必要です',
@@ -119,8 +136,8 @@ export default function TransactionDetail() {
         <Navigation />
         <main className="container mx-auto p-6">
           <div className="mb-6">
-            <Link 
-              to="/pending" 
+            <Link
+              to="/pending"
               className="text-blue-600 hover:text-blue-800 text-sm"
             >
               ← トランザクション一覧に戻る
@@ -142,8 +159,8 @@ export default function TransactionDetail() {
       <Navigation />
       <main className="container mx-auto p-6">
         <div className="mb-6">
-          <Link 
-            to="/pending" 
+          <Link
+            to="/pending"
             className="text-blue-600 hover:text-blue-800 text-sm"
           >
             ← トランザクション一覧に戻る
@@ -159,9 +176,6 @@ export default function TransactionDetail() {
                   トランザクション詳細
                 </h1>
                 <div className="flex items-center gap-3">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                    AggregateBonded
-                  </span>
                   <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
                     連署数: {transaction.cosignatureCount}
                   </span>
@@ -169,14 +183,18 @@ export default function TransactionDetail() {
               </div>
               <button
                 onClick={handleSignClick}
-                disabled={currentStatus.status === 'signing' || currentStatus.status === 'announcing'}
+                disabled={isAlreadyCosigned || currentStatus.status === 'signing' || currentStatus.status === 'announcing'}
                 className={`px-6 py-3 font-medium rounded-lg transition-colors ${
-                  currentStatus.status === 'signing' || currentStatus.status === 'announcing'
+                  isAlreadyCosigned
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
                     ? 'bg-blue-500 text-white cursor-not-allowed'
                     : 'bg-green-600 text-white hover:bg-green-700'
                 }`}
               >
-                {currentStatus.status === 'signing' || currentStatus.status === 'announcing'
+                {isAlreadyCosigned
+                  ? '署名済み'
+                  : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
                   ? '処理中...'
                   : '署名する'
                 }
@@ -224,16 +242,35 @@ export default function TransactionDetail() {
                 既存の連署者 ({transaction.cosignerAddresses.length}名)
               </h2>
               <div className="space-y-3">
-                {transaction.cosignerAddresses.map((address, index) => (
-                  <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <code className="text-sm font-mono text-green-800 break-all">
-                        {address}
-                      </code>
+                {transaction.cosignerAddresses.map((address, index) => {
+                  const isCurrentAddress = activeAddress?.address === address;
+                  return (
+                    <div
+                      key={index}
+                      className={`p-3 border rounded-lg ${
+                        isCurrentAddress
+                          ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200'
+                          : 'bg-green-50 border-green-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-2 rounded-full ${
+                          isCurrentAddress ? 'bg-blue-500' : 'bg-green-500'
+                        }`}></div>
+                        <code className={`text-sm font-mono break-all ${
+                          isCurrentAddress ? 'text-blue-800 font-semibold' : 'text-green-800'
+                        }`}>
+                          {address}
+                        </code>
+                        {isCurrentAddress && (
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                            選択中
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -283,7 +320,7 @@ export default function TransactionDetail() {
                     'text-yellow-700'
                   }`}>
                     {currentStatus.message}
-                    {currentStatus.status === 'pending' && 
+                    {currentStatus.status === 'pending' &&
                       ' 上の「署名する」ボタンをクリックして署名を行ってください。'
                     }
                   </div>
