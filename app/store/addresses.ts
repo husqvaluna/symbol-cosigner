@@ -10,17 +10,25 @@
  * 関連ファイル: app/types/address.ts
  */
 
-import { atom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
-import type { Address, CreateAddressParams, UpdateAddressParams, AddressFilter } from '../types/address';
-import { validateSymbolAddress } from '../utils/address-validation';
+import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+import type {
+  Address,
+  CreateAddressParams,
+  UpdateAddressParams,
+  AddressFilter,
+} from "../types/address";
+import { validateSymbolAddress } from "../utils/address-validation";
 
 // ===== プリミティブAtoms =====
 
 /**
  * アドレス一覧の基本atom（ローカルストレージと同期）
  */
-export const addressesAtom = atomWithStorage<Address[]>('symbol-cosigner-addresses', []);
+export const addressesAtom = atomWithStorage<Address[]>(
+  "symbol-cosigner-addresses",
+  [],
+);
 
 /**
  * アドレスフィルタリング条件のatom
@@ -43,12 +51,18 @@ export const filteredAddressesAtom = atom((get) => {
     }
 
     // メモ検索
-    if (filter.memoSearch && !addr.memo.toLowerCase().includes(filter.memoSearch.toLowerCase())) {
+    if (
+      filter.memoSearch &&
+      !addr.memo.toLowerCase().includes(filter.memoSearch.toLowerCase())
+    ) {
       return false;
     }
 
     // アドレス検索
-    if (filter.addressSearch && !addr.address.toLowerCase().includes(filter.addressSearch.toLowerCase())) {
+    if (
+      filter.addressSearch &&
+      !addr.address.toLowerCase().includes(filter.addressSearch.toLowerCase())
+    ) {
       return false;
     }
 
@@ -61,7 +75,7 @@ export const filteredAddressesAtom = atom((get) => {
  */
 export const activeAddressAtom = atom((get) => {
   const addresses = get(addressesAtom);
-  return addresses.find(addr => addr.active) || null;
+  return addresses.find((addr) => addr.active) || null;
 });
 
 /**
@@ -71,8 +85,8 @@ export const addressStatsAtom = atom((get) => {
   const addresses = get(addressesAtom);
   return {
     total: addresses.length,
-    active: addresses.filter(addr => addr.active).length,
-    inactive: addresses.filter(addr => !addr.active).length,
+    active: addresses.filter((addr) => addr.active).length,
+    inactive: addresses.filter((addr) => !addr.active).length,
   };
 });
 
@@ -88,7 +102,7 @@ export const selectedAddressAtom = atom((get) => {
   const addresses = get(addressesAtom);
   const selectedId = get(selectedAddressIdAtom);
   if (!selectedId) return null;
-  return addresses.find(addr => addr.address === selectedId) || null;
+  return addresses.find((addr) => addr.address === selectedId) || null;
 });
 
 // ===== アクションAtoms =====
@@ -104,32 +118,32 @@ export const addAddressAtom = atom(
     // バリデーション
     const validation = validateSymbolAddress(params.address);
     if (!validation.isValid || !validation.normalizedAddress) {
-      throw new Error(validation.error || 'Invalid address');
+      throw new Error(validation.error || "Invalid address");
     }
 
     const normalizedAddress = validation.normalizedAddress;
 
     // 重複チェック
-    if (addresses.some(addr => addr.address === normalizedAddress)) {
-      throw new Error('このアドレスは既に登録されています');
+    if (addresses.some((addr) => addr.address === normalizedAddress)) {
+      throw new Error("このアドレスは既に登録されています");
     }
 
     // 新しいアドレスがアクティブな場合、他のアドレスを非アクティブにする
     const updatedAddresses = params.active
-      ? addresses.map(addr => ({ ...addr, active: false }))
+      ? addresses.map((addr) => ({ ...addr, active: false }))
       : addresses;
 
     // 新しいアドレスを追加
     const newAddress: Address = {
       address: normalizedAddress,
-      memo: params.memo || '',
+      memo: params.memo || "",
       active: params.active || false,
       createdAt: new Date().toISOString(),
     };
 
     set(addressesAtom, [...updatedAddresses, newAddress]);
     return newAddress;
-  }
+  },
 );
 
 /**
@@ -139,16 +153,18 @@ export const updateAddressAtom = atom(
   null,
   (get, set, params: UpdateAddressParams) => {
     const addresses = get(addressesAtom);
-    const targetIndex = addresses.findIndex(addr => addr.address === params.address);
+    const targetIndex = addresses.findIndex(
+      (addr) => addr.address === params.address,
+    );
 
     if (targetIndex === -1) {
-      throw new Error('アドレスが見つかりません');
+      throw new Error("アドレスが見つかりません");
     }
 
     // アクティブ状態を変更する場合、他のアドレスを非アクティブにする
     let updatedAddresses = [...addresses];
     if (params.active && !addresses[targetIndex].active) {
-      updatedAddresses = addresses.map(addr => ({ ...addr, active: false }));
+      updatedAddresses = addresses.map((addr) => ({ ...addr, active: false }));
     }
 
     // アドレスを更新
@@ -160,7 +176,7 @@ export const updateAddressAtom = atom(
 
     set(addressesAtom, updatedAddresses);
     return updatedAddresses[targetIndex];
-  }
+  },
 );
 
 /**
@@ -170,15 +186,17 @@ export const removeAddressAtom = atom(
   null,
   (get, set, targetAddress: string) => {
     const addresses = get(addressesAtom);
-    const filteredAddresses = addresses.filter(addr => addr.address !== targetAddress);
+    const filteredAddresses = addresses.filter(
+      (addr) => addr.address !== targetAddress,
+    );
 
     if (filteredAddresses.length === addresses.length) {
-      throw new Error('アドレスが見つかりません');
+      throw new Error("アドレスが見つかりません");
     }
 
     set(addressesAtom, filteredAddresses);
     return true;
-  }
+  },
 );
 
 /**
@@ -188,22 +206,27 @@ export const setActiveAddressAtom = atom(
   null,
   (get, set, targetAddress: string) => {
     const addresses = get(addressesAtom);
-    const targetExists = addresses.some(addr => addr.address === targetAddress);
+    const targetExists = addresses.some(
+      (addr) => addr.address === targetAddress,
+    );
 
     if (!targetExists) {
-      throw new Error('アドレスが見つかりません');
+      throw new Error("アドレスが見つかりません");
     }
 
     // 全てのアドレスを非アクティブにして、対象のアドレスのみアクティブにする
-    const updatedAddresses = addresses.map(addr => ({
+    const updatedAddresses = addresses.map((addr) => ({
       ...addr,
       active: addr.address === targetAddress,
-      lastUsedAt: addr.address === targetAddress ? new Date().toISOString() : addr.lastUsedAt,
+      lastUsedAt:
+        addr.address === targetAddress
+          ? new Date().toISOString()
+          : addr.lastUsedAt,
     }));
 
     set(addressesAtom, updatedAddresses);
-    return updatedAddresses.find(addr => addr.address === targetAddress)!;
-  }
+    return updatedAddresses.find((addr) => addr.address === targetAddress)!;
+  },
 );
 
 /**
@@ -214,15 +237,12 @@ export const setAddressFilterAtom = atom(
   (get, set, filter: Partial<AddressFilter>) => {
     const currentFilter = get(addressFilterAtom);
     set(addressFilterAtom, { ...currentFilter, ...filter });
-  }
+  },
 );
 
 /**
  * フィルタリセットアクション
  */
-export const resetAddressFilterAtom = atom(
-  null,
-  (_get, set) => {
-    set(addressFilterAtom, {});
-  }
-);
+export const resetAddressFilterAtom = atom(null, (_get, set) => {
+  set(addressFilterAtom, {});
+});

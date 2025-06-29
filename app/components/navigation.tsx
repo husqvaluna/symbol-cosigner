@@ -8,28 +8,19 @@ export function Navigation() {
           Symbol Cosigner
         </Link>
         <div className="flex space-x-6">
-          <Link 
-            to="/waiting" 
-            className="hover:text-gray-300 transition-colors"
-          >
+          <Link to="/waiting" className="hover:text-gray-300 transition-colors">
             要求署名一覧
           </Link>
-          <Link 
-            to="/pending" 
-            className="hover:text-gray-300 transition-colors"
-          >
+          <Link to="/pending" className="hover:text-gray-300 transition-colors">
             待機中署名
           </Link>
-          <Link 
-            to="/addresses" 
+          <Link
+            to="/addresses"
             className="hover:text-gray-300 transition-colors"
           >
             アドレス管理
           </Link>
-          <Link 
-            to="/nodes" 
-            className="hover:text-gray-300 transition-colors"
-          >
+          <Link to="/nodes" className="hover:text-gray-300 transition-colors">
             ノード管理
           </Link>
         </div>

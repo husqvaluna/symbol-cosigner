@@ -8,7 +8,7 @@ import {
   filteredAddressesAtom,
   addressStatsAtom,
   addAddressAtom,
-  setActiveAddressAtom
+  setActiveAddressAtom,
 } from "../store/addresses";
 
 export function meta({}: Route.MetaArgs) {
@@ -44,9 +44,11 @@ export default function Addresses() {
       // 正規化されたアドレスで画面遷移
       navigate(`/addresses/${address}`);
     } catch (error) {
-      console.error('アドレス追加エラー:', error);
+      console.error("アドレス追加エラー:", error);
       // TODO: エラーハンドリング（トースト通知など）
-      alert(error instanceof Error ? error.message : 'アドレスの追加に失敗しました');
+      alert(
+        error instanceof Error ? error.message : "アドレスの追加に失敗しました",
+      );
     }
   };
 
@@ -62,8 +64,12 @@ export default function Addresses() {
         setActiveAddress(address);
       }
     } catch (error) {
-      console.error('アクティブ状態変更エラー:', error);
-      alert(error instanceof Error ? error.message : 'アクティブ状態の変更に失敗しました');
+      console.error("アクティブ状態変更エラー:", error);
+      alert(
+        error instanceof Error
+          ? error.message
+          : "アクティブ状態の変更に失敗しました",
+      );
     }
   };
 
@@ -92,7 +98,10 @@ export default function Addresses() {
             <div className="space-y-4">
               {addresses.length > 0 ? (
                 addresses.map((addr) => (
-                  <div key={addr.address} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                  <div
+                    key={addr.address}
+                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3">
@@ -106,13 +115,15 @@ export default function Addresses() {
                           )}
                         </div>
                         <div className="text-sm text-gray-600 mt-1">
-                          {addr.memo || 'メモなし'}
+                          {addr.memo || "メモなし"}
                         </div>
                         <div className="text-xs text-gray-400 mt-1">
-                          作成日: {new Date(addr.createdAt).toLocaleDateString()}
+                          作成日:{" "}
+                          {new Date(addr.createdAt).toLocaleDateString()}
                           {addr.lastUsedAt && (
                             <span className="ml-3">
-                              最終使用: {new Date(addr.lastUsedAt).toLocaleDateString()}
+                              最終使用:{" "}
+                              {new Date(addr.lastUsedAt).toLocaleDateString()}
                             </span>
                           )}
                         </div>
@@ -125,7 +136,9 @@ export default function Addresses() {
                           詳細
                         </Link>
                         <button
-                          onClick={() => handleToggleActive(addr.address, addr.active)}
+                          onClick={() =>
+                            handleToggleActive(addr.address, addr.active)
+                          }
                           className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200 transition-colors"
                           disabled={addr.active} // アクティブなアドレスは停止不可（現時点では）
                         >

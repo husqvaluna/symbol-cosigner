@@ -3,7 +3,12 @@ import { useAtom } from "jotai";
 import { useState, useEffect } from "react";
 import type { Route } from "./+types/addresses.address";
 import { Navigation } from "../components/navigation";
-import { selectedAddressIdAtom, selectedAddressAtom, updateAddressAtom, removeAddressAtom } from "../store/addresses";
+import {
+  selectedAddressIdAtom,
+  selectedAddressAtom,
+  updateAddressAtom,
+  removeAddressAtom,
+} from "../store/addresses";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -92,8 +97,10 @@ export default function AddressDetail() {
       });
       setIsEditing(false);
     } catch (error) {
-      console.error('メモ更新エラー:', error);
-      alert(error instanceof Error ? error.message : 'メモの更新に失敗しました');
+      console.error("メモ更新エラー:", error);
+      alert(
+        error instanceof Error ? error.message : "メモの更新に失敗しました",
+      );
     }
   };
 
@@ -105,16 +112,22 @@ export default function AddressDetail() {
 
   // アドレス削除処理
   const handleDelete = () => {
-    if (!confirm(`アドレス ${addressData.address} を削除しますか？\nこの操作は取り消しできません。`)) {
+    if (
+      !confirm(
+        `アドレス ${addressData.address} を削除しますか？\nこの操作は取り消しできません。`,
+      )
+    ) {
       return;
     }
 
     try {
       removeAddress(addressData.address);
-      navigate('/addresses');
+      navigate("/addresses");
     } catch (error) {
-      console.error('アドレス削除エラー:', error);
-      alert(error instanceof Error ? error.message : 'アドレスの削除に失敗しました');
+      console.error("アドレス削除エラー:", error);
+      alert(
+        error instanceof Error ? error.message : "アドレスの削除に失敗しました",
+      );
     }
   };
 
@@ -123,7 +136,10 @@ export default function AddressDetail() {
       <Navigation />
       <main className="container mx-auto p-6">
         <div className="mb-6">
-          <Link to="/addresses" className="text-blue-500 hover:text-blue-700 text-sm">
+          <Link
+            to="/addresses"
+            className="text-blue-500 hover:text-blue-700 text-sm"
+          >
             ← アドレス管理に戻る
           </Link>
         </div>
@@ -157,12 +173,14 @@ export default function AddressDetail() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     状態
                   </label>
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                    addressData.active
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {addressData.active ? '使用中' : '停止中'}
+                  <span
+                    className={`inline-block px-2 py-1 rounded-full text-xs ${
+                      addressData.active
+                        ? "bg-green-100 text-green-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {addressData.active ? "使用中" : "停止中"}
                   </span>
                 </div>
                 <div>
@@ -193,9 +211,7 @@ export default function AddressDetail() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       残高 (XYM)
                     </label>
-                    <div className="text-sm text-gray-500">
-                      未取得
-                    </div>
+                    <div className="text-sm text-gray-500">未取得</div>
                   </div>
                 )}
                 {addressData.lastUsedAt ? (
@@ -212,9 +228,7 @@ export default function AddressDetail() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       最終使用
                     </label>
-                    <div className="text-sm text-gray-500">
-                      未使用
-                    </div>
+                    <div className="text-sm text-gray-500">未使用</div>
                   </div>
                 )}
               </div>
@@ -251,7 +265,11 @@ export default function AddressDetail() {
           ) : (
             <>
               <div className="w-full p-3 border rounded-lg bg-gray-50 min-h-[100px]">
-                {addressData.memo || <span className="text-gray-500">メモが設定されていません</span>}
+                {addressData.memo || (
+                  <span className="text-gray-500">
+                    メモが設定されていません
+                  </span>
+                )}
               </div>
               <div className="mt-3">
                 <button
@@ -266,7 +284,9 @@ export default function AddressDetail() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4 text-red-600">危険な操作</h2>
+          <h2 className="text-xl font-semibold mb-4 text-red-600">
+            危険な操作
+          </h2>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <p className="text-sm text-red-700 mb-3">
               このアドレスを削除すると、関連するすべてのデータが失われます。この操作は取り消しできません。

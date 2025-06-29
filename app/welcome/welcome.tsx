@@ -1,7 +1,7 @@
 import logoDark from "./logo-dark.svg";
 import logoLight from "./logo-light.svg";
 
-import { SymbolSignTest } from '../components/misc/symbol-sign-test';
+import { SymbolSignTest } from "../components/misc/symbol-sign-test";
 
 export function Welcome() {
   return (

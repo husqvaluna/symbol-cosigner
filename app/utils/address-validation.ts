@@ -1,7 +1,7 @@
 /**
  * Symbol アドレスバリデーション関数
  * 仕様: @plans/specs.md 参照
- * 
+ *
  * Symbol アドレスは39文字のBase32エンコード済みテキスト
  * または45文字のハイフン付きフォーマット
  */
@@ -14,7 +14,7 @@ const BASE32_CHARS = /^[A-Z2-7]+$/;
  * ハイフンを除去し、大文字に変換
  */
 export function normalizeAddress(address: string): string {
-  return address.replace(/-/g, '').toUpperCase();
+  return address.replace(/-/g, "").toUpperCase();
 }
 
 /**
@@ -28,7 +28,7 @@ export function validateSymbolAddress(address: string): {
   if (!address) {
     return {
       isValid: false,
-      error: 'アドレスを入力してください'
+      error: "アドレスを入力してください",
     };
   }
 
@@ -39,7 +39,7 @@ export function validateSymbolAddress(address: string): {
   if (normalized.length !== 39) {
     return {
       isValid: false,
-      error: `アドレスは39文字である必要があります（現在: ${normalized.length}文字）`
+      error: `アドレスは39文字である必要があります（現在: ${normalized.length}文字）`,
     };
   }
 
@@ -47,13 +47,13 @@ export function validateSymbolAddress(address: string): {
   if (!BASE32_CHARS.test(normalized)) {
     return {
       isValid: false,
-      error: 'アドレスに無効な文字が含まれています（A-Z, 2-7のみ有効）'
+      error: "アドレスに無効な文字が含まれています（A-Z, 2-7のみ有効）",
     };
   }
 
   return {
     isValid: true,
-    normalizedAddress: normalized
+    normalizedAddress: normalized,
   };
 }
 
@@ -70,12 +70,12 @@ export function validateFormattedAddress(address: string): boolean {
   // ハイフンの位置チェック（6, 13, 20, 27, 34, 41文字目）
   const expectedHyphens = [6, 13, 20, 27, 34, 41];
   for (const pos of expectedHyphens) {
-    if (address[pos] !== '-') {
+    if (address[pos] !== "-") {
       return false;
     }
   }
 
   // ハイフン以外の部分をチェック
-  const withoutHyphens = address.replace(/-/g, '');
+  const withoutHyphens = address.replace(/-/g, "");
   return withoutHyphens.length === 39 && BASE32_CHARS.test(withoutHyphens);
 }

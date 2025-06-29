@@ -3,24 +3,22 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-import { nodePolyfills } from "vite-plugin-node-polyfills"
-import topLevelAwait from "vite-plugin-top-level-await"
-import wasm from "vite-plugin-wasm"
+import { nodePolyfills } from "vite-plugin-node-polyfills";
+import topLevelAwait from "vite-plugin-top-level-await";
+import wasm from "vite-plugin-wasm";
 
 export default defineConfig({
   resolve: {
     alias: {
       "symbol-crypto-wasm-node": "symbol-crypto-wasm-web/symbol_crypto_wasm.js",
-    }
+    },
   },
   build: {
     chunkSizeWarningLimit: 4000,
   },
   plugins: [
     nodePolyfills({
-      include: [
-        "crypto",
-      ],
+      include: ["crypto"],
       globals: {
         Buffer: true,
       },
@@ -29,9 +27,9 @@ export default defineConfig({
     wasm(),
     tailwindcss(),
     reactRouter(),
-    tsconfigPaths()
+    tsconfigPaths(),
   ],
   server: {
     open: true,
-  }
+  },
 });

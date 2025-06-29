@@ -39,7 +39,7 @@ export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
   // アドレス入力のバリデーション
   const handleAddressChange = (value: string) => {
     setAddress(value);
-    
+
     if (value.trim() === "") {
       setValidationResult({ isValid: false });
       return;
@@ -52,7 +52,7 @@ export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
   // フォーム送信
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const result = validateSymbolAddress(address);
     if (result.isValid && result.normalizedAddress) {
       onSubmit(result.normalizedAddress, memo.trim() || undefined);
@@ -73,15 +73,28 @@ export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
             className="text-gray-400 hover:text-gray-600 transition-colors"
             aria-label="モーダルを閉じる"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="mb-4">
-            <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Symbol アドレス <span className="text-red-500">*</span>
             </label>
             <input
@@ -94,13 +107,15 @@ export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
                 address && !validationResult.isValid
                   ? "border-red-300 bg-red-50"
                   : address && validationResult.isValid
-                  ? "border-green-300 bg-green-50"
-                  : "border-gray-300"
+                    ? "border-green-300 bg-green-50"
+                    : "border-gray-300"
               }`}
               maxLength={45} // ハイフン付きの最大長
             />
             {address && validationResult.error && (
-              <p className="mt-1 text-sm text-red-600">{validationResult.error}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {validationResult.error}
+              </p>
             )}
             {address && validationResult.isValid && (
               <p className="mt-1 text-sm text-green-600">有効なアドレスです</p>
@@ -111,7 +126,10 @@ export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="memo" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="memo"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               メモ（任意）
             </label>
             <input
