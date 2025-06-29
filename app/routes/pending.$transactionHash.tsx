@@ -59,15 +59,6 @@ export default function TransactionDetail() {
     }
   };
 
-  // 手数料の表示形式変換
-  const formatFee = (fee: string) => {
-    try {
-      const feeNum = Number(fee);
-      return (feeNum / 1000000).toFixed(6) + ' XYM';
-    } catch {
-      return fee;
-    }
-  };
 
   // 署名ボタンクリックハンドラ
   const handleSignClick = () => {
@@ -223,14 +214,6 @@ export default function TransactionDetail() {
                 </label>
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-sm">{formatDeadline(transaction.deadline)}</span>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-500 mb-2">
-                  最大手数料
-                </label>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium">{formatFee(transaction.maxFee)}</span>
                 </div>
               </div>
             </div>

@@ -70,15 +70,6 @@ export default function Pending() {
     }
   };
 
-  // 手数料の表示形式変換
-  const formatFee = (fee: string) => {
-    try {
-      const feeNum = Number(fee);
-      return (feeNum / 1000000).toFixed(6) + ' XYM';
-    } catch {
-      return fee;
-    }
-  };
 
   return (
     <div>
@@ -154,7 +145,7 @@ export default function Pending() {
 
         {/* 統計情報 */}
         {canFetch && !loading && transactions.length > 0 && (
-          <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-lg shadow">
               <div className="text-sm text-gray-500">合計</div>
               <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
@@ -166,12 +157,6 @@ export default function Pending() {
             <div className="bg-white p-4 rounded-lg shadow">
               <div className="text-sm text-gray-500">連署なし</div>
               <div className="text-2xl font-bold text-orange-600">{stats.withoutCosignatures}</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow">
-              <div className="text-sm text-gray-500">平均手数料</div>
-              <div className="text-2xl font-bold text-purple-600">
-                {(stats.averageFee / 1000000).toFixed(2)}
-              </div>
             </div>
           </div>
         )}
@@ -234,10 +219,6 @@ export default function Pending() {
                         <div>
                           <span className="text-gray-500">期限:</span>
                           <div className="mt-1">{formatDeadline(transaction.deadline)}</div>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">最大手数料:</span>
-                          <div className="mt-1">{formatFee(transaction.maxFee)}</div>
                         </div>
                       </div>
 

@@ -56,8 +56,6 @@ export interface AggregateBondedTransactionDTO {
   network: number;
   /** トランザクションタイプ (16961 = AggregateBonded) */
   type: 16961;
-  /** 最大手数料 */
-  maxFee: string;
   /** 期限 */
   deadline: string;
   /** 内包トランザクションのハッシュ */
@@ -130,8 +128,6 @@ export interface DisplayTransaction {
   hash: string;
   /** 署名者公開鍵 */
   signerPublicKey: string;
-  /** 最大手数料 */
-  maxFee: string;
   /** 期限 */
   deadline: string;
   /** 連署者数 */

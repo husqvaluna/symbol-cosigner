@@ -54,9 +54,6 @@ export const transactionStatsAtom = atom((get) => {
     total: transactions.length,
     withCosignatures: transactions.filter(tx => tx.cosignatureCount > 0).length,
     withoutCosignatures: transactions.filter(tx => tx.cosignatureCount === 0).length,
-    averageFee: transactions.length > 0 
-      ? transactions.reduce((sum, tx) => sum + Number(tx.maxFee), 0) / transactions.length
-      : 0,
   };
 });
 

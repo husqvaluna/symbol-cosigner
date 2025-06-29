@@ -111,7 +111,6 @@ function convertToDisplayTransactions(
     id: item.id,
     hash: item.meta.hash,
     signerPublicKey: item.transaction.signerPublicKey,
-    maxFee: item.transaction.maxFee,
     deadline: item.transaction.deadline,
     cosignatureCount: item.transaction.cosignatures.length,
     cosignerPublicKeys: item.transaction.cosignatures.map(c => c.signerPublicKey),
