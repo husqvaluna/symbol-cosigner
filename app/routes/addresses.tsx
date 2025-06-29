@@ -1,6 +1,8 @@
 import type { Route } from "./+types/addresses";
 import { Navigation } from "../components/navigation";
-import { Link } from "react-router";
+import { AddressModal } from "../components/AddressModal";
+import { Link, useNavigate } from "react-router";
+import { useState } from "react";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,6 +12,9 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Addresses() {
+  const navigate = useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
   const mockAddresses = [
     {
       address: "TCIFSMQZAX3IDPHUP2RTXP26N6BJRNKEBBKP33I",
@@ -23,13 +28,32 @@ export default function Addresses() {
     }
   ];
 
+  // モーダルを開く
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  // モーダルを閉じる
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // アドレス追加時の処理
+  const handleAddAddress = (address: string) => {
+    // 正規化されたアドレスで画面遷移
+    navigate(`/addresses/${address}`);
+  };
+
   return (
     <div>
       <Navigation />
       <main className="container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">アドレス管理</h1>
-          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
+          <button 
+            onClick={handleOpenModal}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          >
             新しいアドレスを追加
           </button>
         </div>
@@ -73,6 +97,13 @@ export default function Addresses() {
             </div>
           </div>
         </div>
+
+        {/* アドレス追加モーダル */}
+        <AddressModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleAddAddress}
+        />
       </main>
     </div>
   );
