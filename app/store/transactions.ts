@@ -212,38 +212,6 @@ export const resetTransactionStateAtom = atom(
   }
 );
 
-// ===== 自動更新関連Atoms =====
-
-/**
- * 自動リフレッシュ有効フラグ
- */
-export const autoRefreshEnabledAtom = atom<boolean>(false);
-
-/**
- * 自動リフレッシュ間隔（秒）
- */
-export const autoRefreshIntervalAtom = atom<number>(30);
-
-/**
- * 最後の自動リフレッシュ時刻
- */
-export const lastAutoRefreshAtom = atom<Date | null>(null);
-
-/**
- * 自動リフレッシュ切り替えアクション
- */
-export const toggleAutoRefreshAtom = atom(
-  null,
-  (get, set) => {
-    const currentEnabled = get(autoRefreshEnabledAtom);
-    set(autoRefreshEnabledAtom, !currentEnabled);
-    
-    if (!currentEnabled) {
-      // 自動リフレッシュ有効化時は即座にリフレッシュ
-      set(refreshTransactionsAtom);
-    }
-  }
-);
 
 // ===== 読み取り専用派生Atoms =====
 
