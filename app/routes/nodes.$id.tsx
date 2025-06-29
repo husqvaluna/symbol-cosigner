@@ -1,14 +1,15 @@
 // import type { Route } from "./+types/nodes.$id";
-import { Navigation } from "../components/navigation";
-import { useParams, Link, useNavigate } from "react-router";
-import { useState, useEffect } from "react";
+
 import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
+import { Navigation } from "../components/navigation";
 import {
   nodesAtom,
-  updateNodeAtom,
+  performNodeHealthCheckAtom,
   removeNodeAtom,
   setActiveNodeAtom,
-  performNodeHealthCheckAtom,
+  updateNodeAtom,
 } from "../store/nodes";
 import type { Node } from "../types/node";
 

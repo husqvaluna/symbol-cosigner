@@ -10,7 +10,7 @@
  * - app/utils/node-validation.ts
  */
 
-import type { Node, NetworkType, PresetServers } from "../types/node";
+import type { NetworkType, Node, PresetServers } from "../types/node";
 import { generateNodeId, normalizeNodeUrl } from "./node-validation";
 
 /**

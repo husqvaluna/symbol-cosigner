@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { validateSymbolAddress } from "../utils/address-validation";
 
 interface AddressModalProps {

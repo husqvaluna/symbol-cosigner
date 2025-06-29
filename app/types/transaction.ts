@@ -113,7 +113,7 @@ export interface FetchPartialTransactionsParams {
   /** ページ番号 (デフォルト: 1) */
   pageNumber?: number;
   /** ソート順 (デフォルト: desc) */
-  order?: 'asc' | 'desc';
+  order?: "asc" | "desc";
 }
 
 // ===== UI表示用型 =====
@@ -171,7 +171,7 @@ export interface ApiError {
 /**
  * API 成功/失敗の結果型
  */
-export type ApiResult<T> = 
+export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: ApiError };
 
@@ -194,7 +194,12 @@ export interface CosignaturePayload {
 /**
  * 署名処理の状態
  */
-export type SigningStatus = 'idle' | 'signing' | 'announcing' | 'success' | 'error';
+export type SigningStatus =
+  | "idle"
+  | "signing"
+  | "announcing"
+  | "success"
+  | "error";
 
 /**
  * 署名処理の状態管理
@@ -225,7 +230,7 @@ export interface SignRequestParams {
   /** ノードURL */
   nodeUrl: string;
   /** ネットワークタイプ */
-  networkType: 'TESTNET' | 'MAINNET';
+  networkType: "TESTNET" | "MAINNET";
 }
 
 /**

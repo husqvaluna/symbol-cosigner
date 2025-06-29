@@ -13,15 +13,15 @@
  */
 
 import ky, { HTTPError, TimeoutError } from "ky";
+import type { NetworkType } from "../types/node";
 import type {
+  ApiError,
+  ApiResult,
+  DisplayTransaction,
   FetchPartialTransactionsParams,
   PartialTransactionsResponseDTO,
-  DisplayTransaction,
-  ApiResult,
-  ApiError,
 } from "../types/transaction";
 import { getAddressFromPublicKey } from "./symbol-sign";
-import type { NetworkType } from "../types/node";
 
 // ===== 定数 =====
 
@@ -33,7 +33,7 @@ const DEFAULT_PARAMS = {
   type: 16961, // AggregateBonded
   pageSize: 100,
   pageNumber: 1,
-  order: 'desc' as const,
+  order: "desc" as const,
 };
 
 // ===== ユーティリティ関数 =====
@@ -43,13 +43,19 @@ const DEFAULT_PARAMS = {
  */
 function buildUrlParams(params: FetchPartialTransactionsParams): string {
   const searchParams = new URLSearchParams();
-  
-  searchParams.append('type', String(params.type ?? DEFAULT_PARAMS.type));
-  searchParams.append('address', params.address);
-  searchParams.append('pageSize', String(params.pageSize ?? DEFAULT_PARAMS.pageSize));
-  searchParams.append('pageNumber', String(params.pageNumber ?? DEFAULT_PARAMS.pageNumber));
-  searchParams.append('order', params.order ?? DEFAULT_PARAMS.order);
-  
+
+  searchParams.append("type", String(params.type ?? DEFAULT_PARAMS.type));
+  searchParams.append("address", params.address);
+  searchParams.append(
+    "pageSize",
+    String(params.pageSize ?? DEFAULT_PARAMS.pageSize),
+  );
+  searchParams.append(
+    "pageNumber",
+    String(params.pageNumber ?? DEFAULT_PARAMS.pageNumber),
+  );
+  searchParams.append("order", params.order ?? DEFAULT_PARAMS.order);
+
   return searchParams.toString();
 }
 
@@ -58,37 +64,42 @@ function buildUrlParams(params: FetchPartialTransactionsParams): string {
  */
 function normalizeNodeUrl(nodeUrl: string): string {
   // 末尾のスラッシュを削除
-  return nodeUrl.replace(/\/$/, '');
+  return nodeUrl.replace(/\/$/, "");
 }
 
 /**
  * API エラーを作成
  */
-function createApiError(message: string, code: string = 'API_ERROR'): ApiError {
+function createApiError(message: string, code: string = "API_ERROR"): ApiError {
   return { code, message };
 }
 
 /**
  * レスポンスを検証
  */
-function validateResponse(data: unknown): data is PartialTransactionsResponseDTO {
-  if (!data || typeof data !== 'object') {
+function validateResponse(
+  data: unknown,
+): data is PartialTransactionsResponseDTO {
+  if (!data || typeof data !== "object") {
     return false;
   }
-  
+
   const response = data as Record<string, unknown>;
-  
+
   // 基本構造の確認
   if (!Array.isArray(response.data) || !response.pagination) {
     return false;
   }
-  
+
   // pagination の確認
   const pagination = response.pagination as Record<string, unknown>;
-  if (typeof pagination.pageNumber !== 'number' || typeof pagination.pageSize !== 'number') {
+  if (
+    typeof pagination.pageNumber !== "number" ||
+    typeof pagination.pageSize !== "number"
+  ) {
     return false;
   }
-  
+
   return true;
 }
 
@@ -108,26 +119,31 @@ function parseDeadline(deadlineStr: string): Date {
  */
 function convertToDisplayTransactions(
   response: PartialTransactionsResponseDTO,
-  network: NetworkType
+  network: NetworkType,
 ): DisplayTransaction[] {
   return response.data.map((item) => {
     // 署名者アドレス変換（エラー時は空文字）
-    let signerAddress = '';
+    let signerAddress = "";
     try {
-      signerAddress = getAddressFromPublicKey(item.transaction.signerPublicKey, network);
+      signerAddress = getAddressFromPublicKey(
+        item.transaction.signerPublicKey,
+        network,
+      );
     } catch (error) {
-      console.warn('署名者アドレス変換に失敗しました:', error);
+      console.warn("署名者アドレス変換に失敗しました:", error);
     }
 
     // 連署者アドレス変換（エラー時は空配列）
-    const cosignerAddresses = item.transaction.cosignatures.map(c => {
-      try {
-        return getAddressFromPublicKey(c.signerPublicKey, network);
-      } catch (error) {
-        console.warn('連署者アドレス変換に失敗しました:', error);
-        return '';
-      }
-    }).filter(addr => addr !== ''); // 空文字は除外
+    const cosignerAddresses = item.transaction.cosignatures
+      .map((c) => {
+        try {
+          return getAddressFromPublicKey(c.signerPublicKey, network);
+        } catch (error) {
+          console.warn("連署者アドレス変換に失敗しました:", error);
+          return "";
+        }
+      })
+      .filter((addr) => addr !== ""); // 空文字は除外
 
     return {
       id: item.id,
@@ -136,7 +152,9 @@ function convertToDisplayTransactions(
       signerAddress,
       deadline: item.transaction.deadline,
       cosignatureCount: item.transaction.cosignatures.length,
-      cosignerPublicKeys: item.transaction.cosignatures.map(c => c.signerPublicKey),
+      cosignerPublicKeys: item.transaction.cosignatures.map(
+        (c) => c.signerPublicKey,
+      ),
       cosignerAddresses,
       createdAt: parseDeadline(item.transaction.deadline),
     };
@@ -150,25 +168,28 @@ function convertToDisplayTransactions(
  */
 function inferNetworkType(nodeUrl: string): NetworkType {
   const url = nodeUrl.toLowerCase();
-  if (url.includes('testnet') || url.includes('test')) {
-    return 'TESTNET';
+  if (url.includes("testnet") || url.includes("test")) {
+    return "TESTNET";
   }
   // デフォルトはMAINNET
-  return 'MAINNET';
+  return "MAINNET";
 }
 
 /**
  * 部分トランザクション一覧を取得
  */
 export async function fetchPartialTransactions(
-  params: FetchPartialTransactionsParams
+  params: FetchPartialTransactionsParams,
 ): Promise<ApiResult<DisplayTransaction[]>> {
   try {
     // パラメータ検証
     if (!params.nodeUrl || !params.address) {
       return {
         success: false,
-        error: createApiError('ノードURLとアドレスは必須です', 'INVALID_PARAMS'),
+        error: createApiError(
+          "ノードURLとアドレスは必須です",
+          "INVALID_PARAMS",
+        ),
       };
     }
 
@@ -181,20 +202,22 @@ export async function fetchPartialTransactions(
       prefixUrl: baseUrl,
       timeout: API_TIMEOUT,
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
     });
 
     try {
       // API リクエスト
-      const data = await api.get(`transactions/partial?${urlParams}`).json<PartialTransactionsResponseDTO>();
+      const data = await api
+        .get(`transactions/partial?${urlParams}`)
+        .json<PartialTransactionsResponseDTO>();
 
       // レスポンス検証
       if (!validateResponse(data)) {
         return {
           success: false,
-          error: createApiError('無効なレスポンス形式です', 'INVALID_RESPONSE'),
+          error: createApiError("無効なレスポンス形式です", "INVALID_RESPONSE"),
         };
       }
 
@@ -208,7 +231,6 @@ export async function fetchPartialTransactions(
         success: true,
         data: transactions,
       };
-
     } catch (requestError) {
       // kyエラーハンドリング
       if (requestError instanceof HTTPError) {
@@ -216,20 +238,23 @@ export async function fetchPartialTransactions(
         if (response.status === 404) {
           return {
             success: false,
-            error: createApiError('指定されたリソースが見つかりません', 'NOT_FOUND'),
+            error: createApiError(
+              "指定されたリソースが見つかりません",
+              "NOT_FOUND",
+            ),
           };
         }
         if (response.status === 409) {
           return {
             success: false,
-            error: createApiError('無効なパラメータです', 'INVALID_ARGUMENT'),
+            error: createApiError("無効なパラメータです", "INVALID_ARGUMENT"),
           };
         }
         return {
           success: false,
           error: createApiError(
             `サーバーエラー: ${response.status} ${response.statusText}`,
-            'SERVER_ERROR'
+            "SERVER_ERROR",
           ),
         };
       }
@@ -237,7 +262,7 @@ export async function fetchPartialTransactions(
       if (requestError instanceof TimeoutError) {
         return {
           success: false,
-          error: createApiError('リクエストがタイムアウトしました', 'TIMEOUT'),
+          error: createApiError("リクエストがタイムアウトしました", "TIMEOUT"),
         };
       }
 
@@ -245,19 +270,23 @@ export async function fetchPartialTransactions(
       if (requestError instanceof Error) {
         return {
           success: false,
-          error: createApiError('ネットワーク接続に失敗しました', 'NETWORK_ERROR'),
+          error: createApiError(
+            "ネットワーク接続に失敗しました",
+            "NETWORK_ERROR",
+          ),
         };
       }
-      
+
       throw requestError;
     }
-
   } catch (error) {
     return {
       success: false,
       error: createApiError(
-        error instanceof Error ? error.message : '予期しないエラーが発生しました',
-        'UNKNOWN_ERROR'
+        error instanceof Error
+          ? error.message
+          : "予期しないエラーが発生しました",
+        "UNKNOWN_ERROR",
       ),
     };
   }
@@ -273,21 +302,25 @@ export async function announceCosignature(
     signature: string;
     signerPublicKey: string;
     version: string;
-  }
+  },
 ): Promise<ApiResult<{ message: string }>> {
   try {
     // パラメータ検証
     if (!nodeUrl) {
       return {
         success: false,
-        error: createApiError('ノードURLは必須です', 'INVALID_PARAMS'),
+        error: createApiError("ノードURLは必須です", "INVALID_PARAMS"),
       };
     }
 
-    if (!cosignature.parentHash || !cosignature.signature || !cosignature.signerPublicKey) {
+    if (
+      !cosignature.parentHash ||
+      !cosignature.signature ||
+      !cosignature.signerPublicKey
+    ) {
       return {
         success: false,
-        error: createApiError('連署データが不完全です', 'INVALID_PARAMS'),
+        error: createApiError("連署データが不完全です", "INVALID_PARAMS"),
       };
     }
 
@@ -299,14 +332,14 @@ export async function announceCosignature(
       prefixUrl: baseUrl,
       timeout: API_TIMEOUT,
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
     });
 
     try {
       // 連署アナウンス
-      const response = await api.put('transactions/cosignature', {
+      const response = await api.put("transactions/cosignature", {
         json: cosignature,
       });
 
@@ -315,7 +348,7 @@ export async function announceCosignature(
         return {
           success: true,
           data: {
-            message: '連署が正常にアナウンスされました',
+            message: "連署が正常にアナウンスされました",
           },
         };
       }
@@ -325,34 +358,39 @@ export async function announceCosignature(
         success: false,
         error: createApiError(
           `予期しないレスポンス: ${response.status}`,
-          'UNEXPECTED_RESPONSE'
+          "UNEXPECTED_RESPONSE",
         ),
       };
-
     } catch (requestError) {
       // kyエラーハンドリング
       if (requestError instanceof HTTPError) {
         const response = requestError.response;
-        
+
         if (response.status === 400) {
           return {
             success: false,
-            error: createApiError('無効なリクエスト内容です', 'INVALID_CONTENT'),
+            error: createApiError(
+              "無効なリクエスト内容です",
+              "INVALID_CONTENT",
+            ),
           };
         }
-        
+
         if (response.status === 409) {
           return {
             success: false,
-            error: createApiError('連署の検証に失敗しました', 'VALIDATION_ERROR'),
+            error: createApiError(
+              "連署の検証に失敗しました",
+              "VALIDATION_ERROR",
+            ),
           };
         }
-        
+
         return {
           success: false,
           error: createApiError(
             `サーバーエラー: ${response.status} ${response.statusText}`,
-            'SERVER_ERROR'
+            "SERVER_ERROR",
           ),
         };
       }
@@ -360,7 +398,7 @@ export async function announceCosignature(
       if (requestError instanceof TimeoutError) {
         return {
           success: false,
-          error: createApiError('リクエストがタイムアウトしました', 'TIMEOUT'),
+          error: createApiError("リクエストがタイムアウトしました", "TIMEOUT"),
         };
       }
 
@@ -368,19 +406,23 @@ export async function announceCosignature(
       if (requestError instanceof Error) {
         return {
           success: false,
-          error: createApiError('ネットワーク接続に失敗しました', 'NETWORK_ERROR'),
+          error: createApiError(
+            "ネットワーク接続に失敗しました",
+            "NETWORK_ERROR",
+          ),
         };
       }
-      
+
       throw requestError;
     }
-
   } catch (error) {
     return {
       success: false,
       error: createApiError(
-        error instanceof Error ? error.message : '予期しないエラーが発生しました',
-        'UNKNOWN_ERROR'
+        error instanceof Error
+          ? error.message
+          : "予期しないエラーが発生しました",
+        "UNKNOWN_ERROR",
       ),
     };
   }
@@ -391,11 +433,11 @@ export async function announceCosignature(
  */
 export async function fetchPartialTransactionById(
   nodeUrl: string,
-  transactionId: string
+  transactionId: string,
 ): Promise<ApiResult<DisplayTransaction>> {
   // 将来実装予定
   return {
     success: false,
-    error: createApiError('未実装の機能です', 'NOT_IMPLEMENTED'),
+    error: createApiError("未実装の機能です", "NOT_IMPLEMENTED"),
   };
 }

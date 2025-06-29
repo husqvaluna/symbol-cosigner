@@ -14,9 +14,9 @@ import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import type {
   Address,
+  AddressFilter,
   CreateAddressParams,
   UpdateAddressParams,
-  AddressFilter,
 } from "../types/address";
 import { validateSymbolAddress } from "../utils/address-validation";
 

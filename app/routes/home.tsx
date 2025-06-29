@@ -1,7 +1,7 @@
-import type { Route } from "./+types/home";
-import { Navigation } from "../components/navigation";
 import { useAtomValue } from "jotai";
+import { Navigation } from "../components/navigation";
 import { activeAddressAtom } from "../store/addresses";
+import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -22,7 +22,9 @@ export default function Home() {
           {activeAddress ? (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-blue-800">現在設定中のアドレス:</span>
+                <span className="text-sm font-medium text-blue-800">
+                  現在設定中のアドレス:
+                </span>
                 <code className="bg-blue-100 px-2 py-1 rounded text-sm font-mono text-blue-900">
                   {activeAddress.address}
                 </code>

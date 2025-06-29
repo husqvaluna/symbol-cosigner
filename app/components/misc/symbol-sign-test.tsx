@@ -1,5 +1,6 @@
 import { PrivateKey } from "symbol-sdk";
-import { Network, SymbolFacade, descriptors } from "symbol-sdk/symbol";
+import { descriptors, Network, SymbolFacade } from "symbol-sdk/symbol";
+
 const facade = new SymbolFacade(Network.TESTNET);
 const account = facade.createAccount(PrivateKey.random());
 const descriptor = new descriptors.TransferTransactionV1Descriptor(

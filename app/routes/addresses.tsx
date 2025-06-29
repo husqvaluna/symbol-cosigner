@@ -1,15 +1,15 @@
-import type { Route } from "./+types/addresses";
-import { Navigation } from "../components/navigation";
-import { AddressModal } from "../components/AddressModal";
-import { Link, useNavigate } from "react-router";
-import { useState } from "react";
 import { useAtom } from "jotai";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { AddressModal } from "../components/AddressModal";
+import { Navigation } from "../components/navigation";
 import {
-  filteredAddressesAtom,
-  addressStatsAtom,
   addAddressAtom,
+  addressStatsAtom,
+  filteredAddressesAtom,
   setActiveAddressAtom,
 } from "../store/addresses";
+import type { Route } from "./+types/addresses";
 
 export function meta({}: Route.MetaArgs) {
   return [

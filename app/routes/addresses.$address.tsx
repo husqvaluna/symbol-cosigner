@@ -1,14 +1,14 @@
-import { useParams, Link, useNavigate } from "react-router";
 import { useAtom } from "jotai";
-import { useState, useEffect } from "react";
-import type { Route } from "./+types/addresses.$address";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
 import { Navigation } from "../components/navigation";
 import {
-  selectedAddressIdAtom,
-  selectedAddressAtom,
-  updateAddressAtom,
   removeAddressAtom,
+  selectedAddressAtom,
+  selectedAddressIdAtom,
+  updateAddressAtom,
 } from "../store/addresses";
+import type { Route } from "./+types/addresses.$address";
 
 export function meta({ params }: Route.MetaArgs) {
   return [

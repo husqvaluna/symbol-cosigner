@@ -6,15 +6,15 @@
  * 実際のテスト実行には Jest, Vitest, または Node.js の assert モジュールが必要です。
  */
 
+import type { Node } from "../types/node";
 import {
+  getPresetNodeStats,
   getPresetNodes,
   getPresetNodesByNetwork,
-  shouldInitializePresetNodes,
-  mergeWithPresetNodes,
   getPresetServers,
-  getPresetNodeStats,
+  mergeWithPresetNodes,
+  shouldInitializePresetNodes,
 } from "../utils/preset-nodes";
-import type { Node } from "../types/node";
 
 // モックテストフレームワーク（実際のテストフレームワークに置き換える）
 const test = (name: string, fn: () => void) => {

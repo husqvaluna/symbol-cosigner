@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { CreateNodeParams, NetworkType } from "../types/node";
 import {
-  validateNodeUrl,
   detectNodeNetwork,
   normalizeNodeUrl,
+  validateNodeUrl,
 } from "../utils/node-validation";
-import type { CreateNodeParams, NetworkType } from "../types/node";
 
 interface NodeModalProps {
   isOpen: boolean;

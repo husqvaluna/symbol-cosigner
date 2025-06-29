@@ -12,19 +12,24 @@
  * - app/routes/pending.tsx
  */
 
-import type { Route } from "./+types/pending.$transactionHash";
-import { useParams, Link } from "react-router";
 import { useAtomValue } from "jotai";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router";
 import { Navigation } from "../components/navigation";
-import { transactionsAtom } from "../store/transactions";
-import { signingStateAtom, getSigningCompletedEventAtom } from "../store/signing";
-import { activeAddressAtom } from "../store/addresses";
 import { PrivateKeyModal } from "../components/PrivateKeyModal";
+import { activeAddressAtom } from "../store/addresses";
+import {
+  getSigningCompletedEventAtom,
+  signingStateAtom,
+} from "../store/signing";
+import { transactionsAtom } from "../store/transactions";
+import type { Route } from "./+types/pending.$transactionHash";
 
 export function meta({ params }: Route.MetaArgs) {
   return [
-    { title: `トランザクション詳細 - ${params.transactionHash?.substring(0, 16)}... - Symbol Cosigner` },
+    {
+      title: `トランザクション詳細 - ${params.transactionHash?.substring(0, 16)}... - Symbol Cosigner`,
+    },
     { name: "description", content: "トランザクション詳細と署名機能" },
   ];
 }
@@ -36,10 +41,11 @@ export default function TransactionDetail() {
   const signingCompletedEvent = useAtomValue(getSigningCompletedEventAtom);
   const activeAddress = useAtomValue(activeAddressAtom);
   const [showPrivateKeyModal, setShowPrivateKeyModal] = useState(false);
-  const [hasSignedThisTransaction, setHasSignedThisTransaction] = useState(false);
+  const [hasSignedThisTransaction, setHasSignedThisTransaction] =
+    useState(false);
 
   // 指定されたハッシュのトランザクションを検索
-  const transaction = transactions.find(tx => tx.hash === transactionHash);
+  const transaction = transactions.find((tx) => tx.hash === transactionHash);
 
   // アクティブアドレスが既存の連署者に含まれているかチェック
   const isAlreadyCosigned = useMemo(() => {
@@ -49,7 +55,11 @@ export default function TransactionDetail() {
 
   // 署名完了イベントの監視
   useEffect(() => {
-    if (signingCompletedEvent && signingCompletedEvent.transactionHash === transactionHash && signingCompletedEvent.success) {
+    if (
+      signingCompletedEvent &&
+      signingCompletedEvent.transactionHash === transactionHash &&
+      signingCompletedEvent.success
+    ) {
       setHasSignedThisTransaction(true);
     }
   }, [signingCompletedEvent, transactionHash]);
@@ -61,12 +71,11 @@ export default function TransactionDetail() {
       const nemesisTimestamp = 1615852585000;
       const deadlineMs = Number(deadline);
       const date = new Date(nemesisTimestamp + deadlineMs);
-      return date.toLocaleString('ja-JP');
+      return date.toLocaleString("ja-JP");
     } catch {
       return deadline;
     }
   };
-
 
   // 署名ボタンクリックハンドラ
   const handleSignClick = () => {
@@ -78,53 +87,53 @@ export default function TransactionDetail() {
     // 最優先: 既存連署者チェック
     if (isAlreadyCosigned) {
       return {
-        status: 'already_signed',
-        message: 'このアドレスは既に署名済みです',
-        color: 'green',
+        status: "already_signed",
+        message: "このアドレスは既に署名済みです",
+        color: "green",
       };
     }
 
     if (hasSignedThisTransaction) {
       return {
-        status: 'signed',
-        message: 'このトランザクションに署名済みです',
-        color: 'green',
+        status: "signed",
+        message: "このトランザクションに署名済みです",
+        color: "green",
       };
     }
 
     if (signingState.transactionHash === transactionHash) {
       switch (signingState.status) {
-        case 'signing':
+        case "signing":
           return {
-            status: 'signing',
-            message: '署名を作成中...',
-            color: 'blue',
+            status: "signing",
+            message: "署名を作成中...",
+            color: "blue",
           };
-        case 'announcing':
+        case "announcing":
           return {
-            status: 'announcing',
-            message: 'ネットワークにアナウンス中...',
-            color: 'blue',
+            status: "announcing",
+            message: "ネットワークにアナウンス中...",
+            color: "blue",
           };
-        case 'success':
+        case "success":
           return {
-            status: 'success',
-            message: '署名とアナウンスが完了しました',
-            color: 'green',
+            status: "success",
+            message: "署名とアナウンスが完了しました",
+            color: "green",
           };
-        case 'error':
+        case "error":
           return {
-            status: 'error',
-            message: signingState.error || '署名処理でエラーが発生しました',
-            color: 'red',
+            status: "error",
+            message: signingState.error || "署名処理でエラーが発生しました",
+            color: "red",
           };
       }
     }
 
     return {
-      status: 'pending',
-      message: 'このトランザクションにはあなたの署名が必要です',
-      color: 'yellow',
+      status: "pending",
+      message: "このトランザクションにはあなたの署名が必要です",
+      color: "yellow",
     };
   };
 
@@ -144,9 +153,12 @@ export default function TransactionDetail() {
             </Link>
           </div>
           <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-            <div className="text-red-800 font-medium">トランザクションが見つかりません</div>
+            <div className="text-red-800 font-medium">
+              トランザクションが見つかりません
+            </div>
             <div className="text-red-600 text-sm mt-1">
-              指定されたハッシュ「{transactionHash}」のトランザクションが存在しないか、読み込まれていません。
+              指定されたハッシュ「{transactionHash}
+              」のトランザクションが存在しないか、読み込まれていません。
             </div>
           </div>
         </main>
@@ -183,35 +195,44 @@ export default function TransactionDetail() {
               </div>
               <button
                 onClick={handleSignClick}
-                disabled={isAlreadyCosigned || currentStatus.status === 'signing' || currentStatus.status === 'announcing'}
+                disabled={
+                  isAlreadyCosigned ||
+                  currentStatus.status === "signing" ||
+                  currentStatus.status === "announcing"
+                }
                 className={`px-6 py-3 font-medium rounded-lg transition-colors ${
                   isAlreadyCosigned
-                    ? 'bg-gray-400 text-white cursor-not-allowed'
-                    : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
-                    ? 'bg-blue-500 text-white cursor-not-allowed'
-                    : 'bg-green-600 text-white hover:bg-green-700'
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : currentStatus.status === "signing" ||
+                        currentStatus.status === "announcing"
+                      ? "bg-blue-500 text-white cursor-not-allowed"
+                      : "bg-green-600 text-white hover:bg-green-700"
                 }`}
               >
                 {isAlreadyCosigned
-                  ? '署名済み'
-                  : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
-                  ? '処理中...'
-                  : '署名する'
-                }
+                  ? "署名済み"
+                  : currentStatus.status === "signing" ||
+                      currentStatus.status === "announcing"
+                    ? "処理中..."
+                    : "署名する"}
               </button>
             </div>
           </div>
 
           {/* 基本情報 */}
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">基本情報</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              基本情報
+            </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-2">
                   トランザクションハッシュ
                 </label>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <code className="text-sm font-mono break-all">{transaction.hash}</code>
+                  <code className="text-sm font-mono break-all">
+                    {transaction.hash}
+                  </code>
                 </div>
               </div>
               <div>
@@ -229,7 +250,9 @@ export default function TransactionDetail() {
                   期限
                 </label>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm">{formatDeadline(transaction.deadline)}</span>
+                  <span className="text-sm">
+                    {formatDeadline(transaction.deadline)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -249,17 +272,23 @@ export default function TransactionDetail() {
                       key={index}
                       className={`p-3 border rounded-lg ${
                         isCurrentAddress
-                          ? 'bg-blue-50 border-blue-300 ring-2 ring-blue-200'
-                          : 'bg-green-50 border-green-200'
+                          ? "bg-blue-50 border-blue-300 ring-2 ring-blue-200"
+                          : "bg-green-50 border-green-200"
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          isCurrentAddress ? 'bg-blue-500' : 'bg-green-500'
-                        }`}></div>
-                        <code className={`text-sm font-mono break-all ${
-                          isCurrentAddress ? 'text-blue-800 font-semibold' : 'text-green-800'
-                        }`}>
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            isCurrentAddress ? "bg-blue-500" : "bg-green-500"
+                          }`}
+                        ></div>
+                        <code
+                          className={`text-sm font-mono break-all ${
+                            isCurrentAddress
+                              ? "text-blue-800 font-semibold"
+                              : "text-green-800"
+                          }`}
+                        >
                           {address}
                         </code>
                         {isCurrentAddress && (
@@ -277,52 +306,99 @@ export default function TransactionDetail() {
 
           {/* 署名状態 */}
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">署名状態</h2>
-            <div className={`border rounded-lg p-4 ${
-              currentStatus.color === 'green' ? 'bg-green-50 border-green-200' :
-              currentStatus.color === 'blue' ? 'bg-blue-50 border-blue-200' :
-              currentStatus.color === 'red' ? 'bg-red-50 border-red-200' :
-              'bg-yellow-50 border-yellow-200'
-            }`}>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              署名状態
+            </h2>
+            <div
+              className={`border rounded-lg p-4 ${
+                currentStatus.color === "green"
+                  ? "bg-green-50 border-green-200"
+                  : currentStatus.color === "blue"
+                    ? "bg-blue-50 border-blue-200"
+                    : currentStatus.color === "red"
+                      ? "bg-red-50 border-red-200"
+                      : "bg-yellow-50 border-yellow-200"
+              }`}
+            >
               <div className="flex items-center gap-3">
-                {currentStatus.status === 'signing' || currentStatus.status === 'announcing' ? (
-                  <div className={`w-3 h-3 rounded-full animate-pulse ${
-                    currentStatus.color === 'blue' ? 'bg-blue-500' : 'bg-yellow-500'
-                  }`}></div>
-                ) : currentStatus.status === 'signed' || currentStatus.status === 'success' ? (
-                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                {currentStatus.status === "signing" ||
+                currentStatus.status === "announcing" ? (
+                  <div
+                    className={`w-3 h-3 rounded-full animate-pulse ${
+                      currentStatus.color === "blue"
+                        ? "bg-blue-500"
+                        : "bg-yellow-500"
+                    }`}
+                  ></div>
+                ) : currentStatus.status === "signed" ||
+                  currentStatus.status === "success" ? (
+                  <svg
+                    className="w-5 h-5 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
-                ) : currentStatus.status === 'error' ? (
-                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                ) : currentStatus.status === "error" ? (
+                  <svg
+                    className="w-5 h-5 text-red-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                 ) : (
                   <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
                 )}
                 <div>
-                  <div className={`font-medium ${
-                    currentStatus.color === 'green' ? 'text-green-800' :
-                    currentStatus.color === 'blue' ? 'text-blue-800' :
-                    currentStatus.color === 'red' ? 'text-red-800' :
-                    'text-yellow-800'
-                  }`}>
-                    {currentStatus.status === 'signed' || currentStatus.status === 'success' ? '署名完了' :
-                     currentStatus.status === 'signing' ? '署名中' :
-                     currentStatus.status === 'announcing' ? 'アナウンス中' :
-                     currentStatus.status === 'error' ? 'エラー' :
-                     '署名待機中'}
+                  <div
+                    className={`font-medium ${
+                      currentStatus.color === "green"
+                        ? "text-green-800"
+                        : currentStatus.color === "blue"
+                          ? "text-blue-800"
+                          : currentStatus.color === "red"
+                            ? "text-red-800"
+                            : "text-yellow-800"
+                    }`}
+                  >
+                    {currentStatus.status === "signed" ||
+                    currentStatus.status === "success"
+                      ? "署名完了"
+                      : currentStatus.status === "signing"
+                        ? "署名中"
+                        : currentStatus.status === "announcing"
+                          ? "アナウンス中"
+                          : currentStatus.status === "error"
+                            ? "エラー"
+                            : "署名待機中"}
                   </div>
-                  <div className={`text-sm mt-1 ${
-                    currentStatus.color === 'green' ? 'text-green-700' :
-                    currentStatus.color === 'blue' ? 'text-blue-700' :
-                    currentStatus.color === 'red' ? 'text-red-700' :
-                    'text-yellow-700'
-                  }`}>
+                  <div
+                    className={`text-sm mt-1 ${
+                      currentStatus.color === "green"
+                        ? "text-green-700"
+                        : currentStatus.color === "blue"
+                          ? "text-blue-700"
+                          : currentStatus.color === "red"
+                            ? "text-red-700"
+                            : "text-yellow-700"
+                    }`}
+                  >
                     {currentStatus.message}
-                    {currentStatus.status === 'pending' &&
-                      ' 上の「署名する」ボタンをクリックして署名を行ってください。'
-                    }
+                    {currentStatus.status === "pending" &&
+                      " 上の「署名する」ボタンをクリックして署名を行ってください。"}
                   </div>
                 </div>
               </div>
