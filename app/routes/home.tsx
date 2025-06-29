@@ -54,15 +54,6 @@ export default function Home() {
             <h2 className="text-xl font-semibold mb-4">署名管理</h2>
             <div className="space-y-3">
               <a
-                href="/waiting"
-                className="block p-3 bg-blue-50 rounded hover:bg-blue-100 transition-colors"
-              >
-                <div className="font-medium">要求されている署名</div>
-                <div className="text-sm text-gray-600">
-                  未署名のトランザクション一覧
-                </div>
-              </a>
-              <a
                 href="/pending"
                 className="block p-3 bg-yellow-50 rounded hover:bg-yellow-100 transition-colors"
               >
