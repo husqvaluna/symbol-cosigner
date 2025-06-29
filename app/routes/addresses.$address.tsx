@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router";
 import { useAtom } from "jotai";
 import { useState, useEffect } from "react";
-import type { Route } from "./+types/addresses.address";
+import type { Route } from "./+types/addresses.$address";
 import { Navigation } from "../components/navigation";
 import {
   selectedAddressIdAtom,
