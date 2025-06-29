@@ -40,7 +40,6 @@
       "Bash(npx biome format:*)"
     ],
     "deny": [
-      "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(rm:*)",
       "Bash(sudo:*)",

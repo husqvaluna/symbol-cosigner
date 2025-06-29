@@ -13,21 +13,38 @@
  */
 
 import { useState, useRef, useEffect } from "react";
+import { useAtom, useAtomValue } from "jotai";
 import { PrivateKey } from "symbol-sdk";
+import {
+  executeSigningAtom,
+  signingStateAtom,
+  isSigningAtom,
+  signingProgressMessageAtom,
+  resetSigningAtom,
+  canSignAtom,
+} from "../store/signing";
+import { activeNodeAtom } from "../store/nodes";
 
 interface PrivateKeyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSign: (privateKey: string) => void;
   transactionHash: string;
 }
 
-export function PrivateKeyModal({ isOpen, onClose, onSign, transactionHash }: PrivateKeyModalProps) {
+export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKeyModalProps) {
   const [privateKey, setPrivateKey] = useState("");
   const [error, setError] = useState("");
-  const [isValidating, setIsValidating] = useState(false);
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Jotai atoms
+  const signingState = useAtomValue(signingStateAtom);
+  const isSigning = useAtomValue(isSigningAtom);
+  const progressMessage = useAtomValue(signingProgressMessageAtom);
+  const { canSign, missingRequirements } = useAtomValue(canSignAtom);
+  const activeNode = useAtomValue(activeNodeAtom);
+  const [, executeSigning] = useAtom(executeSigningAtom);
+  const [, resetSigning] = useAtom(resetSigningAtom);
 
   // モーダルが開いたときにフォーカスを設定
   useEffect(() => {
@@ -40,14 +57,25 @@ export function PrivateKeyModal({ isOpen, onClose, onSign, transactionHash }: Pr
   useEffect(() => {
     if (!isOpen) {
       clearPrivateKey();
+      resetSigning();
     }
-  }, [isOpen]);
+  }, [isOpen, resetSigning]);
+
+  // 署名完了時の処理
+  useEffect(() => {
+    if (signingState.status === 'success') {
+      // 少し待ってから自動的にモーダルを閉じる
+      const timer = setTimeout(() => {
+        onClose();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [signingState.status, onClose]);
 
   // 秘密鍵の安全なクリア
   const clearPrivateKey = () => {
     setPrivateKey("");
     setError("");
-    setIsValidating(false);
     setShowPrivateKey(false);
   };
 
@@ -96,23 +124,39 @@ export function PrivateKeyModal({ isOpen, onClose, onSign, transactionHash }: Pr
 
   // 署名実行ハンドラ
   const handleSign = async () => {
-    setIsValidating(true);
-    
-    if (validatePrivateKey(privateKey)) {
-      try {
-        onSign(privateKey);
-        clearPrivateKey();
-      } catch (err) {
-        setError("署名処理中にエラーが発生しました");
-      }
+    if (!validatePrivateKey(privateKey)) {
+      return;
     }
-    
-    setIsValidating(false);
+
+    if (!canSign) {
+      setError(missingRequirements.join(', '));
+      return;
+    }
+
+    if (!activeNode) {
+      setError('アクティブなノードが設定されていません');
+      return;
+    }
+
+    try {
+      await executeSigning({
+        transactionHash,
+        privateKey,
+        nodeUrl: activeNode.url,
+        networkType: activeNode.network,
+      });
+      
+      // 成功時は秘密鍵をクリア
+      clearPrivateKey();
+      
+    } catch (error) {
+      setError('署名処理中に予期しないエラーが発生しました');
+    }
   };
 
   // キーボードショートカット
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !isValidating && privateKey) {
+    if (e.key === "Enter" && !isSigning && privateKey && canSign) {
       e.preventDefault();
       handleSign();
     } else if (e.key === "Escape") {
@@ -172,13 +216,13 @@ export function PrivateKeyModal({ isOpen, onClose, onSign, transactionHash }: Pr
                 placeholder="64文字の16進数を入力してください"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
                 maxLength={64}
-                disabled={isValidating}
+                disabled={isSigning}
               />
               <button
                 type="button"
                 onClick={() => setShowPrivateKey(!showPrivateKey)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                disabled={isValidating}
+                disabled={isSigning}
               >
                 {showPrivateKey ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,9 +242,31 @@ export function PrivateKeyModal({ isOpen, onClose, onSign, transactionHash }: Pr
           </div>
 
           {/* エラー表示 */}
-          {error && (
+          {(error || signingState.error) && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="text-sm text-red-800">{error}</div>
+              <div className="text-sm text-red-800">{error || signingState.error}</div>
+            </div>
+          )}
+
+          {/* プログレス表示 */}
+          {isSigning && progressMessage && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="text-sm text-blue-800">{progressMessage}</div>
+              </div>
+            </div>
+          )}
+
+          {/* 成功表示 */}
+          {signingState.status === 'success' && signingState.successMessage && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <div className="text-sm text-green-800">{signingState.successMessage}</div>
+              </div>
             </div>
           )}
 
@@ -228,19 +294,19 @@ export function PrivateKeyModal({ isOpen, onClose, onSign, transactionHash }: Pr
             <button
               onClick={handleCancel}
               className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-              disabled={isValidating}
+              disabled={isSigning}
             >
               キャンセル
             </button>
             <button
               onClick={handleSign}
-              disabled={!privateKey || isValidating || !!error}
+              disabled={!privateKey || isSigning || !!error || !canSign || signingState.status === 'success'}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
-              {isValidating && (
+              {isSigning && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               )}
-              {isValidating ? "検証中..." : "署名実行"}
+              {signingState.status === 'success' ? "署名完了" : isSigning ? progressMessage : "署名実行"}
             </button>
           </div>
         </div>

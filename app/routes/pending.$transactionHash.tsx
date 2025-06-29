@@ -15,9 +15,10 @@
 import type { Route } from "./+types/pending.$transactionHash";
 import { useParams, Link } from "react-router";
 import { useAtomValue } from "jotai";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigation } from "../components/navigation";
 import { transactionsAtom } from "../store/transactions";
+import { signingStateAtom, getSigningCompletedEventAtom } from "../store/signing";
 import { PrivateKeyModal } from "../components/PrivateKeyModal";
 
 export function meta({ params }: Route.MetaArgs) {
@@ -30,10 +31,20 @@ export function meta({ params }: Route.MetaArgs) {
 export default function TransactionDetail() {
   const { transactionHash } = useParams();
   const transactions = useAtomValue(transactionsAtom);
+  const signingState = useAtomValue(signingStateAtom);
+  const signingCompletedEvent = useAtomValue(getSigningCompletedEventAtom);
   const [showPrivateKeyModal, setShowPrivateKeyModal] = useState(false);
+  const [hasSignedThisTransaction, setHasSignedThisTransaction] = useState(false);
 
   // 指定されたハッシュのトランザクションを検索
   const transaction = transactions.find(tx => tx.hash === transactionHash);
+
+  // 署名完了イベントの監視
+  useEffect(() => {
+    if (signingCompletedEvent && signingCompletedEvent.transactionHash === transactionHash && signingCompletedEvent.success) {
+      setHasSignedThisTransaction(true);
+    }
+  }, [signingCompletedEvent, transactionHash]);
 
   // トランザクション期限の表示形式変換
   const formatDeadline = (deadline: string) => {
@@ -63,12 +74,53 @@ export default function TransactionDetail() {
     setShowPrivateKeyModal(true);
   };
 
-  // 秘密鍵モーダルの署名処理
-  const handleSign = (privateKey: string) => {
-    // TODO: 実際の署名処理は後続で実装
-    console.log('署名処理:', { transactionHash, privateKey: privateKey.substring(0, 8) + '...' });
-    setShowPrivateKeyModal(false);
+  // 署名状態の判定
+  const getSigningStatus = () => {
+    if (hasSignedThisTransaction) {
+      return {
+        status: 'signed',
+        message: 'このトランザクションに署名済みです',
+        color: 'green',
+      };
+    }
+    
+    if (signingState.transactionHash === transactionHash) {
+      switch (signingState.status) {
+        case 'signing':
+          return {
+            status: 'signing',
+            message: '署名を作成中...',
+            color: 'blue',
+          };
+        case 'announcing':
+          return {
+            status: 'announcing',
+            message: 'ネットワークにアナウンス中...',
+            color: 'blue',
+          };
+        case 'success':
+          return {
+            status: 'success',
+            message: '署名とアナウンスが完了しました',
+            color: 'green',
+          };
+        case 'error':
+          return {
+            status: 'error',
+            message: signingState.error || '署名処理でエラーが発生しました',
+            color: 'red',
+          };
+      }
+    }
+    
+    return {
+      status: 'pending',
+      message: 'このトランザクションにはあなたの署名が必要です',
+      color: 'yellow',
+    };
   };
+
+  const currentStatus = getSigningStatus();
 
   if (!transaction) {
     return (
@@ -126,9 +178,21 @@ export default function TransactionDetail() {
               </div>
               <button
                 onClick={handleSignClick}
-                className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                disabled={currentStatus.status === 'signed' || currentStatus.status === 'signing' || currentStatus.status === 'announcing' || currentStatus.status === 'success'}
+                className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+                  currentStatus.status === 'signed' || currentStatus.status === 'success'
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
+                    ? 'bg-blue-500 text-white cursor-not-allowed'
+                    : 'bg-green-600 text-white hover:bg-green-700'
+                }`}
               >
-                署名する
+                {currentStatus.status === 'signed' || currentStatus.status === 'success' 
+                  ? '署名済み' 
+                  : currentStatus.status === 'signing' || currentStatus.status === 'announcing'
+                  ? '処理中...'
+                  : '署名する'
+                }
               </button>
             </div>
           </div>
@@ -196,13 +260,51 @@ export default function TransactionDetail() {
           {/* 署名状態 */}
           <div className="p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">署名状態</h2>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className={`border rounded-lg p-4 ${
+              currentStatus.color === 'green' ? 'bg-green-50 border-green-200' :
+              currentStatus.color === 'blue' ? 'bg-blue-50 border-blue-200' :
+              currentStatus.color === 'red' ? 'bg-red-50 border-red-200' :
+              'bg-yellow-50 border-yellow-200'
+            }`}>
               <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                {currentStatus.status === 'signing' || currentStatus.status === 'announcing' ? (
+                  <div className={`w-3 h-3 rounded-full animate-pulse ${
+                    currentStatus.color === 'blue' ? 'bg-blue-500' : 'bg-yellow-500'
+                  }`}></div>
+                ) : currentStatus.status === 'signed' || currentStatus.status === 'success' ? (
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : currentStatus.status === 'error' ? (
+                  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ) : (
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                )}
                 <div>
-                  <div className="font-medium text-yellow-800">署名待機中</div>
-                  <div className="text-sm text-yellow-700 mt-1">
-                    このトランザクションにはあなたの署名が必要です。上の「署名する」ボタンをクリックして署名を行ってください。
+                  <div className={`font-medium ${
+                    currentStatus.color === 'green' ? 'text-green-800' :
+                    currentStatus.color === 'blue' ? 'text-blue-800' :
+                    currentStatus.color === 'red' ? 'text-red-800' :
+                    'text-yellow-800'
+                  }`}>
+                    {currentStatus.status === 'signed' || currentStatus.status === 'success' ? '署名完了' :
+                     currentStatus.status === 'signing' ? '署名中' :
+                     currentStatus.status === 'announcing' ? 'アナウンス中' :
+                     currentStatus.status === 'error' ? 'エラー' :
+                     '署名待機中'}
+                  </div>
+                  <div className={`text-sm mt-1 ${
+                    currentStatus.color === 'green' ? 'text-green-700' :
+                    currentStatus.color === 'blue' ? 'text-blue-700' :
+                    currentStatus.color === 'red' ? 'text-red-700' :
+                    'text-yellow-700'
+                  }`}>
+                    {currentStatus.message}
+                    {currentStatus.status === 'pending' && 
+                      ' 上の「署名する」ボタンをクリックして署名を行ってください。'
+                    }
                   </div>
                 </div>
               </div>
@@ -216,7 +318,6 @@ export default function TransactionDetail() {
         <PrivateKeyModal
           isOpen={showPrivateKeyModal}
           onClose={() => setShowPrivateKeyModal(false)}
-          onSign={handleSign}
           transactionHash={transaction.hash}
         />
       )}

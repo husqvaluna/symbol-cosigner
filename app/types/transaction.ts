@@ -174,3 +174,70 @@ export interface ApiError {
 export type ApiResult<T> = 
   | { success: true; data: T }
   | { success: false; error: ApiError };
+
+// ===== 署名関連の型定義 =====
+
+/**
+ * 連署データ（アナウンス用）
+ */
+export interface CosignaturePayload {
+  /** 親トランザクションハッシュ */
+  parentHash: string;
+  /** 署名 */
+  signature: string;
+  /** 署名者公開鍵 */
+  signerPublicKey: string;
+  /** バージョン */
+  version: string;
+}
+
+/**
+ * 署名処理の状態
+ */
+export type SigningStatus = 'idle' | 'signing' | 'announcing' | 'success' | 'error';
+
+/**
+ * 署名処理の状態管理
+ */
+export interface SigningState {
+  /** 署名中のトランザクションハッシュ */
+  transactionHash: string | null;
+  /** 署名処理の状態 */
+  status: SigningStatus;
+  /** 生成された連署データ */
+  cosignature: CosignaturePayload | null;
+  /** エラーメッセージ */
+  error: string | null;
+  /** 成功メッセージ */
+  successMessage: string | null;
+  /** 最終更新日時 */
+  lastUpdated: Date | null;
+}
+
+/**
+ * 署名リクエストパラメータ
+ */
+export interface SignRequestParams {
+  /** トランザクションハッシュ */
+  transactionHash: string;
+  /** 秘密鍵 */
+  privateKey: string;
+  /** ノードURL */
+  nodeUrl: string;
+  /** ネットワークタイプ */
+  networkType: 'TESTNET' | 'MAINNET';
+}
+
+/**
+ * 署名完了イベント
+ */
+export interface SigningCompletedEvent {
+  /** トランザクションハッシュ */
+  transactionHash: string;
+  /** 成功フラグ */
+  success: boolean;
+  /** エラーメッセージ（失敗時） */
+  error?: string;
+  /** 署名者公開鍵（成功時） */
+  signerPublicKey?: string;
+}

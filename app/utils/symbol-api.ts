@@ -12,6 +12,7 @@
  * - docs/openapi-symbol.yml
  */
 
+import ky, { HTTPError, TimeoutError } from "ky";
 import type {
   FetchPartialTransactionsParams,
   PartialTransactionsResponseDTO,
@@ -138,27 +139,41 @@ export async function fetchPartialTransactions(
     // URL構築
     const baseUrl = normalizeNodeUrl(params.nodeUrl);
     const urlParams = buildUrlParams(params);
-    const fullUrl = `${baseUrl}/transactions/partial?${urlParams}`;
 
-    // タイムアウト処理
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+    // ky インスタンス作成
+    const api = ky.create({
+      prefixUrl: baseUrl,
+      timeout: API_TIMEOUT,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
 
     try {
       // API リクエスト
-      const response = await fetch(fullUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal,
-      });
+      const data = await api.get(`transactions/partial?${urlParams}`).json<PartialTransactionsResponseDTO>();
 
-      clearTimeout(timeoutId);
+      // レスポンス検証
+      if (!validateResponse(data)) {
+        return {
+          success: false,
+          error: createApiError('無効なレスポンス形式です', 'INVALID_RESPONSE'),
+        };
+      }
 
-      // ステータスコード確認
-      if (!response.ok) {
+      // 表示用形式に変換
+      const transactions = convertToDisplayTransactions(data);
+
+      return {
+        success: true,
+        data: transactions,
+      };
+
+    } catch (requestError) {
+      // kyエラーハンドリング
+      if (requestError instanceof HTTPError) {
+        const response = requestError.response;
         if (response.status === 404) {
           return {
             success: false,
@@ -180,44 +195,145 @@ export async function fetchPartialTransactions(
         };
       }
 
-      // レスポンス解析
-      const data = await response.json();
-
-      // レスポンス検証
-      if (!validateResponse(data)) {
+      if (requestError instanceof TimeoutError) {
         return {
           success: false,
-          error: createApiError('無効なレスポンス形式です', 'INVALID_RESPONSE'),
+          error: createApiError('リクエストがタイムアウトしました', 'TIMEOUT'),
         };
       }
 
-      // 表示用形式に変換
-      const transactions = convertToDisplayTransactions(data);
-
-      return {
-        success: true,
-        data: transactions,
-      };
-
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      
-      if (fetchError instanceof Error) {
-        if (fetchError.name === 'AbortError') {
-          return {
-            success: false,
-            error: createApiError('リクエストがタイムアウトしました', 'TIMEOUT'),
-          };
-        }
-        if (fetchError.message.includes('fetch')) {
-          return {
-            success: false,
-            error: createApiError('ネットワーク接続に失敗しました', 'NETWORK_ERROR'),
-          };
-        }
+      // ネットワークエラーまたはその他のエラー
+      if (requestError instanceof Error) {
+        return {
+          success: false,
+          error: createApiError('ネットワーク接続に失敗しました', 'NETWORK_ERROR'),
+        };
       }
       
-      throw fetchError;
+      throw requestError;
+    }
+
+  } catch (error) {
+    return {
+      success: false,
+      error: createApiError(
+        error instanceof Error ? error.message : '予期しないエラーが発生しました',
+        'UNKNOWN_ERROR'
+      ),
+    };
+  }
+}
+
+/**
+ * 連署をアナウンス
+ */
+export async function announceCosignature(
+  nodeUrl: string,
+  cosignature: {
+    parentHash: string;
+    signature: string;
+    signerPublicKey: string;
+    version: string;
+  }
+): Promise<ApiResult<{ message: string }>> {
+  try {
+    // パラメータ検証
+    if (!nodeUrl) {
+      return {
+        success: false,
+        error: createApiError('ノードURLは必須です', 'INVALID_PARAMS'),
+      };
+    }
+
+    if (!cosignature.parentHash || !cosignature.signature || !cosignature.signerPublicKey) {
+      return {
+        success: false,
+        error: createApiError('連署データが不完全です', 'INVALID_PARAMS'),
+      };
+    }
+
+    // URL正規化
+    const baseUrl = normalizeNodeUrl(nodeUrl);
+
+    // ky インスタンス作成
+    const api = ky.create({
+      prefixUrl: baseUrl,
+      timeout: API_TIMEOUT,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+    });
+
+    try {
+      // 連署アナウンス
+      const response = await api.put('transactions/cosignature', {
+        json: cosignature,
+      });
+
+      // 202 Acceptedの確認
+      if (response.status === 202) {
+        return {
+          success: true,
+          data: {
+            message: '連署が正常にアナウンスされました',
+          },
+        };
+      }
+
+      // 予期しないステータス
+      return {
+        success: false,
+        error: createApiError(
+          `予期しないレスポンス: ${response.status}`,
+          'UNEXPECTED_RESPONSE'
+        ),
+      };
+
+    } catch (requestError) {
+      // kyエラーハンドリング
+      if (requestError instanceof HTTPError) {
+        const response = requestError.response;
+        
+        if (response.status === 400) {
+          return {
+            success: false,
+            error: createApiError('無効なリクエスト内容です', 'INVALID_CONTENT'),
+          };
+        }
+        
+        if (response.status === 409) {
+          return {
+            success: false,
+            error: createApiError('連署の検証に失敗しました', 'VALIDATION_ERROR'),
+          };
+        }
+        
+        return {
+          success: false,
+          error: createApiError(
+            `サーバーエラー: ${response.status} ${response.statusText}`,
+            'SERVER_ERROR'
+          ),
+        };
+      }
+
+      if (requestError instanceof TimeoutError) {
+        return {
+          success: false,
+          error: createApiError('リクエストがタイムアウトしました', 'TIMEOUT'),
+        };
+      }
+
+      // ネットワークエラー
+      if (requestError instanceof Error) {
+        return {
+          success: false,
+          error: createApiError('ネットワーク接続に失敗しました', 'NETWORK_ERROR'),
+        };
+      }
+      
+      throw requestError;
     }
 
   } catch (error) {
