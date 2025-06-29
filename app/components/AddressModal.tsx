@@ -4,7 +4,7 @@ import { validateSymbolAddress } from "../utils/address-validation";
 interface AddressModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (address: string) => void;
+  onSubmit: (address: string, memo?: string) => void;
 }
 
 export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
@@ -55,7 +55,7 @@ export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
     
     const result = validateSymbolAddress(address);
     if (result.isValid && result.normalizedAddress) {
-      onSubmit(result.normalizedAddress);
+      onSubmit(result.normalizedAddress, memo.trim() || undefined);
       onClose();
     }
   };
