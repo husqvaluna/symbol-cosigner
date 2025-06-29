@@ -35,7 +35,9 @@
       "WebFetch(domain:npmjs.com)",
       "Bash(mkdir:*)",
       "Bash(npx tailwindcss init:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(npx biome check:*)",
+      "Bash(npx biome format:*)"
     ],
     "deny": [
       "Bash(git commit:*)",
