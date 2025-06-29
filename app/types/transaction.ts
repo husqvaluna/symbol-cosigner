@@ -128,12 +128,16 @@ export interface DisplayTransaction {
   hash: string;
   /** 署名者公開鍵 */
   signerPublicKey: string;
+  /** 署名者アドレス */
+  signerAddress: string;
   /** 期限 */
   deadline: string;
   /** 連署者数 */
   cosignatureCount: number;
   /** 連署者公開鍵一覧 */
   cosignerPublicKeys: string[];
+  /** 連署者アドレス一覧 */
+  cosignerAddresses: string[];
   /** 作成日時（表示用） */
   createdAt: Date;
 }

@@ -197,7 +197,6 @@ export default function Nodes() {
                           to={`/nodes/${node.id}`}
                           className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
                         >
-                          {`/nodes/${node.id}`}
                           詳細
                         </Link>
                         <button

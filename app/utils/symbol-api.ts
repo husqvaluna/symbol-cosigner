@@ -20,6 +20,8 @@ import type {
   ApiResult,
   ApiError,
 } from "../types/transaction";
+import { getAddressFromPublicKey } from "./symbol-sign";
+import type { NetworkType } from "../types/node";
 
 // ===== 定数 =====
 
@@ -105,20 +107,55 @@ function parseDeadline(deadlineStr: string): Date {
  * API レスポンスを表示用形式に変換
  */
 function convertToDisplayTransactions(
-  response: PartialTransactionsResponseDTO
+  response: PartialTransactionsResponseDTO,
+  network: NetworkType
 ): DisplayTransaction[] {
-  return response.data.map((item) => ({
-    id: item.id,
-    hash: item.meta.hash,
-    signerPublicKey: item.transaction.signerPublicKey,
-    deadline: item.transaction.deadline,
-    cosignatureCount: item.transaction.cosignatures.length,
-    cosignerPublicKeys: item.transaction.cosignatures.map(c => c.signerPublicKey),
-    createdAt: parseDeadline(item.transaction.deadline),
-  }));
+  return response.data.map((item) => {
+    // 署名者アドレス変換（エラー時は空文字）
+    let signerAddress = '';
+    try {
+      signerAddress = getAddressFromPublicKey(item.transaction.signerPublicKey, network);
+    } catch (error) {
+      console.warn('署名者アドレス変換に失敗しました:', error);
+    }
+
+    // 連署者アドレス変換（エラー時は空配列）
+    const cosignerAddresses = item.transaction.cosignatures.map(c => {
+      try {
+        return getAddressFromPublicKey(c.signerPublicKey, network);
+      } catch (error) {
+        console.warn('連署者アドレス変換に失敗しました:', error);
+        return '';
+      }
+    }).filter(addr => addr !== ''); // 空文字は除外
+
+    return {
+      id: item.id,
+      hash: item.meta.hash,
+      signerPublicKey: item.transaction.signerPublicKey,
+      signerAddress,
+      deadline: item.transaction.deadline,
+      cosignatureCount: item.transaction.cosignatures.length,
+      cosignerPublicKeys: item.transaction.cosignatures.map(c => c.signerPublicKey),
+      cosignerAddresses,
+      createdAt: parseDeadline(item.transaction.deadline),
+    };
+  });
 }
 
 // ===== メイン関数 =====
+
+/**
+ * ネットワークタイプを推定（ノードURLから）
+ */
+function inferNetworkType(nodeUrl: string): NetworkType {
+  const url = nodeUrl.toLowerCase();
+  if (url.includes('testnet') || url.includes('test')) {
+    return 'TESTNET';
+  }
+  // デフォルトはMAINNET
+  return 'MAINNET';
+}
 
 /**
  * 部分トランザクション一覧を取得
@@ -161,8 +198,11 @@ export async function fetchPartialTransactions(
         };
       }
 
+      // ネットワークタイプ推定
+      const network = inferNetworkType(params.nodeUrl);
+
       // 表示用形式に変換
-      const transactions = convertToDisplayTransactions(data);
+      const transactions = convertToDisplayTransactions(data, network);
 
       return {
         success: true,

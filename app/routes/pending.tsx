@@ -213,7 +213,7 @@ export default function Pending() {
                         <div>
                           <span className="text-gray-500">作成者:</span>
                           <div className="font-mono text-xs mt-1 break-all">
-                            {transaction.signerPublicKey}
+                            {transaction.signerAddress || transaction.signerPublicKey}
                           </div>
                         </div>
                         <div>
@@ -222,13 +222,13 @@ export default function Pending() {
                         </div>
                       </div>
 
-                      {transaction.cosignerPublicKeys.length > 0 && (
+                      {transaction.cosignerAddresses.length > 0 && (
                         <div className="mt-4">
                           <span className="text-gray-500 text-sm">既存の連署者:</span>
                           <div className="mt-2 space-y-1">
-                            {transaction.cosignerPublicKeys.map((publicKey, index) => (
+                            {transaction.cosignerAddresses.map((address, index) => (
                               <div key={index} className="font-mono text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                                {publicKey}
+                                {address}
                               </div>
                             ))}
                           </div>

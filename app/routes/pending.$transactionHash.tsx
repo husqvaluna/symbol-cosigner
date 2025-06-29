@@ -202,10 +202,12 @@ export default function TransactionDetail() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-2">
-                  作成者公開鍵
+                  作成者
                 </label>
                 <div className="p-3 bg-gray-50 rounded-lg">
-                  <code className="text-sm font-mono break-all">{transaction.signerPublicKey}</code>
+                  <code className="text-sm font-mono break-all">
+                    {transaction.signerAddress || transaction.signerPublicKey}
+                  </code>
                 </div>
               </div>
               <div>
@@ -220,18 +222,18 @@ export default function TransactionDetail() {
           </div>
 
           {/* 既存の連署者情報 */}
-          {transaction.cosignerPublicKeys.length > 0 && (
+          {transaction.cosignerAddresses.length > 0 && (
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                既存の連署者 ({transaction.cosignerPublicKeys.length}名)
+                既存の連署者 ({transaction.cosignerAddresses.length}名)
               </h2>
               <div className="space-y-3">
-                {transaction.cosignerPublicKeys.map((publicKey, index) => (
+                {transaction.cosignerAddresses.map((address, index) => (
                   <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <code className="text-sm font-mono text-green-800 break-all">
-                        {publicKey}
+                        {address}
                       </code>
                     </div>
                   </div>
