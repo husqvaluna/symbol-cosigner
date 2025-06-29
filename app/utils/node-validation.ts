@@ -71,6 +71,90 @@ export function generateNodeId(url: string, network: NetworkType): string {
 }
 
 /**
+ * 既知のネットワーク識別子からネットワーク種別を判定
+ */
+export function determineNetworkFromIdentifier(networkIdentifier: number): NetworkType | null {
+	// Symbol 公式ネットワーク識別子
+	switch (networkIdentifier) {
+		case 104: // Symbol Mainnet
+			return 'MAINNET';
+		case 152: // Symbol Testnet
+			return 'TESTNET';
+		default:
+			return null; // 不明なネットワーク
+	}
+}
+
+/**
+ * ノードのネットワーク種別を自動検出
+ */
+export async function detectNodeNetwork(
+	url: string,
+	timeoutMs = 10000,
+): Promise<{ network: NetworkType; nodeInfo: any } | { error: string }> {
+	try {
+		// AbortControllerでタイムアウトを実装
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+		const response = await fetch(`${url}/node/info`, {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+			},
+			signal: controller.signal,
+		});
+
+		clearTimeout(timeoutId);
+
+		if (!response.ok) {
+			return {
+				error: `HTTP ${response.status}: ${response.statusText}`,
+			};
+		}
+
+		const nodeInfo = await response.json();
+
+		// ネットワーク識別子からネットワーク種別を判定
+		const network = determineNetworkFromIdentifier(nodeInfo.networkIdentifier);
+
+		if (!network) {
+			return {
+				error: `サポートされていないネットワークです (networkIdentifier: ${nodeInfo.networkIdentifier})`,
+			};
+		}
+
+		return {
+			network,
+			nodeInfo: {
+				version: nodeInfo.version,
+				publicKey: nodeInfo.publicKey,
+				networkGenerationHashSeed: nodeInfo.networkGenerationHashSeed,
+				networkIdentifier: nodeInfo.networkIdentifier,
+				roles: nodeInfo.roles,
+				port: nodeInfo.port,
+				host: nodeInfo.host,
+				friendlyName: nodeInfo.friendlyName,
+			},
+		};
+	} catch (error) {
+		let errorMessage = 'Unknown error';
+		if (error instanceof Error) {
+			if (error.name === 'AbortError') {
+				errorMessage = '接続タイムアウトしました';
+			} else if (error.name === 'TypeError') {
+				errorMessage = 'ノードに接続できませんでした';
+			} else {
+				errorMessage = error.message;
+			}
+		}
+
+		return { error: errorMessage };
+	}
+}
+
+/**
  * ノードのヘルスチェックを実行
  */
 export async function performNodeHealthCheck(
@@ -118,7 +202,7 @@ export async function performNodeHealthCheck(
 			nodeInfo: {
 				version: nodeInfo.version,
 				publicKey: nodeInfo.publicKey,
-				networkGenerationHash: nodeInfo.networkGenerationHash,
+				networkGenerationHashSeed: nodeInfo.networkGenerationHashSeed,
 				networkIdentifier: nodeInfo.networkIdentifier,
 				roles: nodeInfo.roles,
 				port: nodeInfo.port,

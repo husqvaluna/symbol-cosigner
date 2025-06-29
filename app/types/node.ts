@@ -49,8 +49,8 @@ export interface Node {
 	/** ノードの公開鍵 */
 	publicKey?: string;
 
-	/** ネットワーク生成ハッシュ */
-	networkGenerationHash?: string;
+	/** ネットワーク生成ハッシュシード */
+	networkGenerationHashSeed?: string;
 
 	/** ネットワーク識別子 */
 	networkIdentifier?: number;
@@ -103,7 +103,7 @@ export interface UpdateNodeParams {
 	active?: boolean;
 	version?: string;
 	publicKey?: string;
-	networkGenerationHash?: string;
+	networkGenerationHashSeed?: string;
 	networkIdentifier?: number;
 	roles?: number;
 	port?: number;
@@ -188,7 +188,7 @@ export interface NodeHealthCheck {
 	nodeInfo?: {
 		version?: string;
 		publicKey?: string;
-		networkGenerationHash?: string;
+		networkGenerationHashSeed?: string;
 		networkIdentifier?: number;
 		roles?: number;
 		port?: number;
