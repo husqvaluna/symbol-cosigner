@@ -1,6 +1,7 @@
 import type { Route } from "./+types/pending";
 import { useAtom, useAtomValue } from "jotai";
 import { useEffect } from "react";
+import { Link } from "react-router";
 import { Navigation } from "../components/navigation";
 import {
   transactionsAtom,
@@ -255,12 +256,12 @@ export default function Pending() {
                     </div>
                     
                     <div className="ml-6">
-                      <button
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                        disabled={true}
+                      <Link
+                        to={`/pending/${transaction.hash}`}
+                        className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                       >
-                        署名（未実装）
-                      </button>
+                        詳細・署名
+                      </Link>
                     </div>
                   </div>
                 </div>

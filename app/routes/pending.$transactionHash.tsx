@@ -1,0 +1,225 @@
+/**
+ * トランザクション詳細ページ
+ * 
+ * 設計方針:
+ * - 指定されたハッシュのトランザクション詳細を表示
+ * - 署名ボタンで秘密鍵入力モーダルを表示
+ * - 既存のUIパターンとJotai使用パターンに準拠
+ * 
+ * 関連ファイル:
+ * - app/store/transactions.ts
+ * - app/components/PrivateKeyModal.tsx
+ * - app/routes/pending.tsx
+ */
+
+import type { Route } from "./+types/pending.$transactionHash";
+import { useParams, Link } from "react-router";
+import { useAtomValue } from "jotai";
+import { useState } from "react";
+import { Navigation } from "../components/navigation";
+import { transactionsAtom } from "../store/transactions";
+import { PrivateKeyModal } from "../components/PrivateKeyModal";
+
+export function meta({ params }: Route.MetaArgs) {
+  return [
+    { title: `トランザクション詳細 - ${params.transactionHash?.substring(0, 16)}... - Symbol Cosigner` },
+    { name: "description", content: "トランザクション詳細と署名機能" },
+  ];
+}
+
+export default function TransactionDetail() {
+  const { transactionHash } = useParams();
+  const transactions = useAtomValue(transactionsAtom);
+  const [showPrivateKeyModal, setShowPrivateKeyModal] = useState(false);
+
+  // 指定されたハッシュのトランザクションを検索
+  const transaction = transactions.find(tx => tx.hash === transactionHash);
+
+  // トランザクション期限の表示形式変換
+  const formatDeadline = (deadline: string) => {
+    try {
+      // Symbol の deadline は Nemesis Block からのミリ秒数
+      const nemesisTimestamp = 1615852585000;
+      const deadlineMs = Number(deadline);
+      const date = new Date(nemesisTimestamp + deadlineMs);
+      return date.toLocaleString('ja-JP');
+    } catch {
+      return deadline;
+    }
+  };
+
+  // 手数料の表示形式変換
+  const formatFee = (fee: string) => {
+    try {
+      const feeNum = Number(fee);
+      return (feeNum / 1000000).toFixed(6) + ' XYM';
+    } catch {
+      return fee;
+    }
+  };
+
+  // 署名ボタンクリックハンドラ
+  const handleSignClick = () => {
+    setShowPrivateKeyModal(true);
+  };
+
+  // 秘密鍵モーダルの署名処理
+  const handleSign = (privateKey: string) => {
+    // TODO: 実際の署名処理は後続で実装
+    console.log('署名処理:', { transactionHash, privateKey: privateKey.substring(0, 8) + '...' });
+    setShowPrivateKeyModal(false);
+  };
+
+  if (!transaction) {
+    return (
+      <div>
+        <Navigation />
+        <main className="container mx-auto p-6">
+          <div className="mb-6">
+            <Link 
+              to="/pending" 
+              className="text-blue-600 hover:text-blue-800 text-sm"
+            >
+              ← トランザクション一覧に戻る
+            </Link>
+          </div>
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
+            <div className="text-red-800 font-medium">トランザクションが見つかりません</div>
+            <div className="text-red-600 text-sm mt-1">
+              指定されたハッシュ「{transactionHash}」のトランザクションが存在しないか、読み込まれていません。
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <Navigation />
+      <main className="container mx-auto p-6">
+        <div className="mb-6">
+          <Link 
+            to="/pending" 
+            className="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            ← トランザクション一覧に戻る
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg">
+          {/* ヘッダー部分 */}
+          <div className="border-b border-gray-200 p-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  トランザクション詳細
+                </h1>
+                <div className="flex items-center gap-3">
+                  <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                    AggregateBonded
+                  </span>
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
+                    連署数: {transaction.cosignatureCount}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={handleSignClick}
+                className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+              >
+                署名する
+              </button>
+            </div>
+          </div>
+
+          {/* 基本情報 */}
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">基本情報</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  トランザクションハッシュ
+                </label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <code className="text-sm font-mono break-all">{transaction.hash}</code>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  作成者公開鍵
+                </label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <code className="text-sm font-mono break-all">{transaction.signerPublicKey}</code>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  期限
+                </label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm">{formatDeadline(transaction.deadline)}</span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">
+                  最大手数料
+                </label>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <span className="text-sm font-medium">{formatFee(transaction.maxFee)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 既存の連署者情報 */}
+          {transaction.cosignerPublicKeys.length > 0 && (
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                既存の連署者 ({transaction.cosignerPublicKeys.length}名)
+              </h2>
+              <div className="space-y-3">
+                {transaction.cosignerPublicKeys.map((publicKey, index) => (
+                  <div key={index} className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <code className="text-sm font-mono text-green-800 break-all">
+                        {publicKey}
+                      </code>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 署名状態 */}
+          <div className="p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">署名状態</h2>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                <div>
+                  <div className="font-medium text-yellow-800">署名待機中</div>
+                  <div className="text-sm text-yellow-700 mt-1">
+                    このトランザクションにはあなたの署名が必要です。上の「署名する」ボタンをクリックして署名を行ってください。
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* 秘密鍵入力モーダル */}
+      {showPrivateKeyModal && (
+        <PrivateKeyModal
+          isOpen={showPrivateKeyModal}
+          onClose={() => setShowPrivateKeyModal(false)}
+          onSign={handleSign}
+          transactionHash={transaction.hash}
+        />
+      )}
+    </div>
+  );
+}
