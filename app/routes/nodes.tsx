@@ -194,9 +194,10 @@ export default function Nodes() {
 											</div>
 											<div className="flex gap-2">
 												<Link
-													to={`/nodes/${encodeURIComponent(node.id)}`}
+													to={`/nodes/${node.id}`}
 													className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
 												>
+													{`/nodes/${node.id}`}
 													詳細
 												</Link>
 												<button

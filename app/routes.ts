@@ -7,5 +7,5 @@ export default [
   route("addresses", "routes/addresses.tsx"),
   route("addresses/:address", "routes/addresses.address.tsx"),
   route("nodes", "routes/nodes.tsx"),
-  route("nodes/:nodehost", "routes/nodes.nodehost.tsx"),
+  route("nodes/:nodehost", "routes/nodes.$nodeId.tsx"),
 ] satisfies RouteConfig;
