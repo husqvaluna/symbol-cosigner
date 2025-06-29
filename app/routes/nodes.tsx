@@ -1,20 +1,20 @@
-import type { Route } from "./+types/nodes";
-import { Navigation } from "../components/navigation";
-import { Link } from "react-router";
-import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { NodeModal } from "../components/NodeModal";
+import { Navigation } from "../components/navigation";
 import {
-  nodesAtom,
+  addNodeAtom,
   currentNetworkAtom,
   filteredNodesAtom,
+  initializePresetNodesAtom,
   nodeStatsAtom,
-  addNodeAtom,
+  nodesAtom,
   setActiveNodeAtom,
   switchNetworkAtom,
-  initializePresetNodesAtom,
 } from "../store/nodes";
-import { NodeModal } from "../components/NodeModal";
 import type { CreateNodeParams } from "../types/node";
+import type { Route } from "./+types/nodes";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -39,7 +39,7 @@ export default function Nodes() {
     if (nodes.length === 0) {
       initializePresetNodes();
     }
-  }, [nodes.length, initializePresetNodes]);
+  }, [nodes.length]);
 
   // 現在のネットワークのノード一覧
   const currentNetworkNodes = filteredNodes.filter(

@@ -1,29 +1,29 @@
 /**
  * 秘密鍵入力モーダルコンポーネント
- * 
+ *
  * 設計方針:
  * - セキュアな秘密鍵入力とバリデーション
  * - 入力後の即座なメモリクリア
  * - 既存のModalパターンとTailwindCSSスタイルに準拠
- * 
+ *
  * 関連ファイル:
  * - app/routes/pending.$transactionHash.tsx
  * - app/components/AddressModal.tsx (参考パターン)
  * - docs/examples/cosign.ts (Symbol SDK使用例)
  */
 
-import { useState, useRef, useEffect } from "react";
 import { useAtom, useAtomValue } from "jotai";
+import { useEffect, useRef, useState } from "react";
 import { PrivateKey } from "symbol-sdk";
-import {
-  executeSigningAtom,
-  signingStateAtom,
-  isSigningAtom,
-  signingProgressMessageAtom,
-  resetSigningAtom,
-  canSignAtom,
-} from "../store/signing";
 import { activeNodeAtom } from "../store/nodes";
+import {
+  canSignAtom,
+  executeSigningAtom,
+  isSigningAtom,
+  resetSigningAtom,
+  signingProgressMessageAtom,
+  signingStateAtom,
+} from "../store/signing";
 
 interface PrivateKeyModalProps {
   isOpen: boolean;
@@ -31,7 +31,11 @@ interface PrivateKeyModalProps {
   transactionHash: string;
 }
 
-export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKeyModalProps) {
+export function PrivateKeyModal({
+  isOpen,
+  onClose,
+  transactionHash,
+}: PrivateKeyModalProps) {
   const [privateKey, setPrivateKey] = useState("");
   const [error, setError] = useState("");
   const [showPrivateKey, setShowPrivateKey] = useState(false);
@@ -59,7 +63,7 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
       clearPrivateKey();
       resetSigning();
     }
-  }, [isOpen, resetSigning]);
+  }, [isOpen]);
 
   // 署名完了時の処理は削除（手動でモーダルを閉じる）
 
@@ -93,7 +97,7 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
 
       // Symbol SDK による検証
       new PrivateKey(key);
-      
+
       setError("");
       return true;
     } catch (err) {
@@ -106,7 +110,7 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9A-Fa-f]/g, "").toUpperCase();
     setPrivateKey(value);
-    
+
     // リアルタイムエラークリア
     if (error && value.length > 0) {
       setError("");
@@ -120,12 +124,12 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
     }
 
     if (!canSign) {
-      setError(missingRequirements.join(', '));
+      setError(missingRequirements.join(", "));
       return;
     }
 
     if (!activeNode) {
-      setError('アクティブなノードが設定されていません');
+      setError("アクティブなノードが設定されていません");
       return;
     }
 
@@ -136,12 +140,11 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
         nodeUrl: activeNode.url,
         networkType: activeNode.network,
       });
-      
+
       // 成功時は秘密鍵をクリア
       clearPrivateKey();
-      
     } catch (error) {
-      setError('署名処理中に予期しないエラーが発生しました');
+      setError("署名処理中に予期しないエラーが発生しました");
     }
   };
 
@@ -175,8 +178,18 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
               onClick={handleCancel}
               className="text-gray-400 hover:text-gray-600"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -186,7 +199,9 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
         <div className="p-6">
           {/* トランザクション情報 */}
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <div className="text-sm text-gray-600 mb-2">署名対象トランザクション:</div>
+            <div className="text-sm text-gray-600 mb-2">
+              署名対象トランザクション:
+            </div>
             <code className="text-xs font-mono text-gray-800 break-all">
               {transactionHash}
             </code>
@@ -216,13 +231,38 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
                 disabled={isSigning}
               >
                 {showPrivateKey ? (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M9.878 9.878l.242.242M14.12 14.12l4.242 4.242M14.12 14.12L15.536 15.536M14.12 14.12l-.242-.242" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M9.878 9.878l.242.242M14.12 14.12l4.242 4.242M14.12 14.12L15.536 15.536M14.12 14.12l-.242-.242"
+                    />
                   </svg>
                 ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
                   </svg>
                 )}
               </button>
@@ -235,7 +275,9 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
           {/* エラー表示 */}
           {(error || signingState.error) && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="text-sm text-red-800">{error || signingState.error}</div>
+              <div className="text-sm text-red-800">
+                {error || signingState.error}
+              </div>
             </div>
           )}
 
@@ -250,13 +292,25 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
           )}
 
           {/* 成功表示 */}
-          {signingState.status === 'success' && signingState.successMessage && (
+          {signingState.status === "success" && signingState.successMessage && (
             <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
               <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <svg
+                  className="w-5 h-5 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
-                <div className="text-sm text-green-800">{signingState.successMessage}</div>
+                <div className="text-sm text-green-800">
+                  {signingState.successMessage}
+                </div>
               </div>
             </div>
           )}
@@ -264,15 +318,27 @@ export function PrivateKeyModal({ isOpen, onClose, transactionHash }: PrivateKey
           {/* セキュリティ注意事項 */}
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div className="flex items-start gap-3">
-              <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z" />
+              <svg
+                className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 18.5c-.77.833.192 2.5 1.732 2.5z"
+                />
               </svg>
               <div>
-                <div className="text-sm font-medium text-yellow-800">セキュリティ注意事項</div>
+                <div className="text-sm font-medium text-yellow-800">
+                  セキュリティ注意事項
+                </div>
                 <div className="text-xs text-yellow-700 mt-1">
-                  • 秘密鍵は署名後すぐにメモリから削除されます<br/>
-                  • 信頼できる環境でのみ入力してください<br/>
-                  • 秘密鍵は他者と共有しないでください
+                  • 秘密鍵は署名後すぐにメモリから削除されます
+                  <br />• 信頼できる環境でのみ入力してください
+                  <br />• 秘密鍵は他者と共有しないでください
                 </div>
               </div>
             </div>

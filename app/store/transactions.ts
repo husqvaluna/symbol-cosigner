@@ -17,8 +17,8 @@
 import { atom } from "jotai";
 import type {
   DisplayTransaction,
-  TransactionListState,
   FetchPartialTransactionsParams,
+  TransactionListState,
 } from "../types/transaction";
 import { fetchPartialTransactions } from "../utils/symbol-api";
 import { activeAddressAtom } from "./addresses";
@@ -37,6 +37,12 @@ export const transactionListStateAtom = atom<TransactionListState>({
 });
 
 /**
+ * 初回取得試行済みフラグ
+ * アドレスやノードが変更された際にリセットされる
+ */
+export const hasAttemptedInitialFetchAtom = atom<boolean>(false);
+
+/**
  * 手動リフレッシュトリガー
  */
 export const refreshTriggerAtom = atom<number>(0);
@@ -52,8 +58,10 @@ export const transactionStatsAtom = atom((get) => {
 
   return {
     total: transactions.length,
-    withCosignatures: transactions.filter(tx => tx.cosignatureCount > 0).length,
-    withoutCosignatures: transactions.filter(tx => tx.cosignatureCount === 0).length,
+    withCosignatures: transactions.filter((tx) => tx.cosignatureCount > 0)
+      .length,
+    withoutCosignatures: transactions.filter((tx) => tx.cosignatureCount === 0)
+      .length,
   };
 });
 
@@ -90,13 +98,13 @@ export const missingRequirementsAtom = atom((get) => {
   const activeNode = get(activeNodeAtom);
 
   const missing: string[] = [];
-  
+
   if (!activeAddress) {
-    missing.push('アクティブなアドレス');
+    missing.push("アクティブなアドレス");
   }
-  
+
   if (!activeNode) {
-    missing.push('アクティブなノード');
+    missing.push("アクティブなノード");
   }
 
   return missing;
@@ -107,111 +115,109 @@ export const missingRequirementsAtom = atom((get) => {
 /**
  * トランザクション一覧取得アクション
  */
-export const fetchTransactionsAtom = atom(
-  null,
-  async (get, set) => {
-    const params = get(fetchParamsAtom);
-    
-    if (!params) {
-      set(transactionListStateAtom, prev => ({
-        ...prev,
-        error: 'アクティブなアドレスとノードが必要です',
-        loading: false,
-      }));
-      return;
-    }
+export const fetchTransactionsAtom = atom(null, async (get, set) => {
+  const params = get(fetchParamsAtom);
 
-    // ローディング開始
-    set(transactionListStateAtom, prev => ({
+  if (!params) {
+    set(transactionListStateAtom, (prev) => ({
       ...prev,
-      loading: true,
-      error: null,
+      error: "アクティブなアドレスとノードが必要です",
+      loading: false,
     }));
+    return;
+  }
 
-    try {
-      const result = await fetchPartialTransactions(params);
+  // 初回取得フラグを設定
+  set(hasAttemptedInitialFetchAtom, true);
 
-      if (result.success) {
-        set(transactionListStateAtom, {
-          transactions: result.data,
-          loading: false,
-          error: null,
-          lastUpdated: new Date(),
-        });
-      } else {
-        set(transactionListStateAtom, prev => ({
-          ...prev,
-          loading: false,
-          error: result.error.message,
-        }));
-      }
-    } catch (error) {
-      set(transactionListStateAtom, prev => ({
+  // ローディング開始
+  set(transactionListStateAtom, (prev) => ({
+    ...prev,
+    loading: true,
+    error: null,
+  }));
+
+  try {
+    const result = await fetchPartialTransactions(params);
+
+    if (result.success) {
+      set(transactionListStateAtom, {
+        transactions: result.data,
+        loading: false,
+        error: null,
+        lastUpdated: new Date(),
+      });
+    } else {
+      set(transactionListStateAtom, (prev) => ({
         ...prev,
         loading: false,
-        error: error instanceof Error ? error.message : '予期しないエラーが発生しました',
+        error: result.error.message,
       }));
     }
+  } catch (error) {
+    set(transactionListStateAtom, (prev) => ({
+      ...prev,
+      loading: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "予期しないエラーが発生しました",
+    }));
   }
-);
+});
 
 /**
  * リフレッシュアクション
  */
-export const refreshTransactionsAtom = atom(
-  null,
-  async (get, set) => {
-    // リフレッシュトリガーを増加
-    const currentTrigger = get(refreshTriggerAtom);
-    set(refreshTriggerAtom, currentTrigger + 1);
+export const refreshTransactionsAtom = atom(null, async (get, set) => {
+  // リフレッシュトリガーを増加
+  const currentTrigger = get(refreshTriggerAtom);
+  set(refreshTriggerAtom, currentTrigger + 1);
 
-    // データを再取得
-    await set(fetchTransactionsAtom);
-  }
-);
+  // データを再取得
+  await set(fetchTransactionsAtom);
+});
 
 /**
  * エラークリアアクション
  */
-export const clearTransactionErrorAtom = atom(
-  null,
-  (get, set) => {
-    set(transactionListStateAtom, prev => ({
-      ...prev,
-      error: null,
-    }));
-  }
-);
+export const clearTransactionErrorAtom = atom(null, (get, set) => {
+  set(transactionListStateAtom, (prev) => ({
+    ...prev,
+    error: null,
+  }));
+});
 
 /**
  * ローディング状態リセットアクション
  */
-export const resetTransactionLoadingAtom = atom(
-  null,
-  (get, set) => {
-    set(transactionListStateAtom, prev => ({
-      ...prev,
-      loading: false,
-    }));
-  }
-);
+export const resetTransactionLoadingAtom = atom(null, (get, set) => {
+  set(transactionListStateAtom, (prev) => ({
+    ...prev,
+    loading: false,
+  }));
+});
 
 /**
  * 全状態リセットアクション
  */
-export const resetTransactionStateAtom = atom(
-  null,
-  (get, set) => {
-    set(transactionListStateAtom, {
-      transactions: [],
-      loading: false,
-      error: null,
-      lastUpdated: null,
-    });
-    set(refreshTriggerAtom, 0);
-  }
-);
+export const resetTransactionStateAtom = atom(null, (get, set) => {
+  set(transactionListStateAtom, {
+    transactions: [],
+    loading: false,
+    error: null,
+    lastUpdated: null,
+  });
+  set(refreshTriggerAtom, 0);
+  set(hasAttemptedInitialFetchAtom, false);
+});
 
+/**
+ * アドレス・ノード変更時の初回取得フラグリセットアクション
+ */
+export const resetInitialFetchFlagAtom = atom(null, (get, set) => {
+  set(hasAttemptedInitialFetchAtom, false);
+});
 
 // ===== 読み取り専用派生Atoms =====
 
@@ -219,26 +225,26 @@ export const resetTransactionStateAtom = atom(
  * トランザクション一覧（読み取り専用）
  */
 export const transactionsAtom = atom(
-  (get) => get(transactionListStateAtom).transactions
+  (get) => get(transactionListStateAtom).transactions,
 );
 
 /**
  * ローディング状態（読み取り専用）
  */
 export const transactionsLoadingAtom = atom(
-  (get) => get(transactionListStateAtom).loading
+  (get) => get(transactionListStateAtom).loading,
 );
 
 /**
  * エラー状態（読み取り専用）
  */
 export const transactionsErrorAtom = atom(
-  (get) => get(transactionListStateAtom).error
+  (get) => get(transactionListStateAtom).error,
 );
 
 /**
  * 最終更新日時（読み取り専用）
  */
 export const lastUpdatedAtom = atom(
-  (get) => get(transactionListStateAtom).lastUpdated
+  (get) => get(transactionListStateAtom).lastUpdated,
 );
