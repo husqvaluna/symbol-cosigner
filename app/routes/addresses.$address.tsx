@@ -41,14 +41,16 @@ export default function AddressDetail() {
     return (
       <div>
         <Navigation />
-        <main className="container mx-auto p-6">
+        <main className="mobile-layout md:desktop-layout">
           <div className="text-center py-12">
-            <div className="text-red-500 text-lg mb-4">
-              アドレスが指定されていません
+            <div className="text-center mb-4">
+              <span className="status-badge danger text-lg">
+                アドレスが指定されていません
+              </span>
             </div>
             <Link
               to="/addresses"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+              className="business-button"
             >
               アドレス管理に戻る
             </Link>
@@ -62,14 +64,16 @@ export default function AddressDetail() {
     return (
       <div>
         <Navigation />
-        <main className="container mx-auto p-6">
+        <main className="mobile-layout md:desktop-layout">
           <div className="text-center py-12">
-            <div className="text-red-500 text-lg mb-4">
-              アドレスが見つかりません: {address}
+            <div className="text-center mb-4">
+              <span className="status-badge danger text-lg">
+                アドレスが見つかりません: {address}
+              </span>
             </div>
             <Link
               to="/addresses"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+              className="business-button"
             >
               アドレス管理に戻る
             </Link>
@@ -119,7 +123,7 @@ export default function AddressDetail() {
   return (
     <div>
       <Navigation />
-      <main className="container mx-auto p-6">
+      <main className="mobile-layout md:desktop-layout">
         <div className="mb-6">
           <Link
             to="/addresses"
@@ -131,7 +135,7 @@ export default function AddressDetail() {
 
         <h1 className="text-3xl font-bold mb-6">アドレス詳細</h1>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="business-card mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h2 className="text-xl font-semibold mb-4">基本情報</h2>
@@ -159,10 +163,10 @@ export default function AddressDetail() {
                     状態
                   </label>
                   <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs ${
+                    className={`status-badge ${
                       addressData.active
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
+                        ? "status-badge--success"
+                        : "status-badge--inactive"
                     }`}
                   >
                     {addressData.active ? "使用中" : "停止中"}
@@ -227,7 +231,7 @@ export default function AddressDetail() {
           placeholder="このアドレスに関するメモを入力..."
         />
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="business-card">
           <h2 className="text-xl font-semibold mb-4 text-red-600">
             危険な操作
           </h2>
@@ -237,7 +241,7 @@ export default function AddressDetail() {
             </p>
             <button
               onClick={handleDelete}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+              className="business-button danger"
             >
               アドレスを削除
             </button>

@@ -22,10 +22,6 @@ export default function Home() {
       <main className="mobile-layout md:desktop-layout py-6">
         {/* ステータス概要 */}
         <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold mb-4 text-gray-900">
-            Symbol Cosigner
-          </h1>
-          
           {/* 現在の設定状況 */}
           <div className="space-y-3">
             {activeAddress ? (
@@ -123,25 +119,6 @@ export default function Home() {
 
         {/* 主要機能 */}
         <div className="space-y-4 md:space-y-6">
-          <div className="business-card">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">署名管理</h2>
-              <Link to="/pending" className="business-button primary">
-                一覧を見る
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div className="text-2xl font-bold text-yellow-800 mb-1">3</div>
-                <div className="text-sm text-yellow-700">署名待ち</div>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="text-2xl font-bold text-green-800 mb-1">12</div>
-                <div className="text-sm text-green-700">完了済み</div>
-              </div>
-            </div>
-          </div>
-
           {/* クイックアクション */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link

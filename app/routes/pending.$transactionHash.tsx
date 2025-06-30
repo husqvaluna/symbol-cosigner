@@ -143,7 +143,7 @@ export default function TransactionDetail() {
     return (
       <div>
         <Navigation />
-        <main className="container mx-auto p-6">
+        <main className="mobile-layout md:desktop-layout">
           <div className="mb-6">
             <Link
               to="/pending"
@@ -153,10 +153,12 @@ export default function TransactionDetail() {
             </Link>
           </div>
           <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-            <div className="text-red-800 font-medium">
-              トランザクションが見つかりません
+            <div className="mb-2">
+              <span className="status-badge danger">
+                トランザクションが見つかりません
+              </span>
             </div>
-            <div className="text-red-600 text-sm mt-1">
+            <div className="text-red-600 text-sm">
               指定されたハッシュ「{transactionHash}
               」のトランザクションが存在しないか、読み込まれていません。
             </div>
@@ -179,7 +181,7 @@ export default function TransactionDetail() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg">
+        <div className="business-card">
           {/* ヘッダー部分 */}
           <div className="border-b border-gray-200 p-6">
             <div className="flex items-start justify-between">
@@ -200,13 +202,13 @@ export default function TransactionDetail() {
                   currentStatus.status === "signing" ||
                   currentStatus.status === "announcing"
                 }
-                className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+                className={`business-button ${
                   isAlreadyCosigned
-                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    ? "secondary cursor-not-allowed"
                     : currentStatus.status === "signing" ||
                         currentStatus.status === "announcing"
-                      ? "bg-blue-500 text-white cursor-not-allowed"
-                      : "bg-green-600 text-white hover:bg-green-700"
+                      ? "primary cursor-not-allowed"
+                      : "success"
                 }`}
               >
                 {isAlreadyCosigned

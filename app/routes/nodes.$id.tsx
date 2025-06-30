@@ -57,7 +57,7 @@ export default function NodeDetail() {
     return (
       <div>
         <Navigation />
-        <main className="container mx-auto p-6">
+        <main className="mobile-layout md:desktop-layout">
           <div className="mb-6">
             <Link
               to="/nodes"
@@ -67,15 +67,17 @@ export default function NodeDetail() {
             </Link>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">
-              エラーが発生しました
-            </h1>
+            <div className="mb-4">
+              <span className="status-badge danger text-lg">
+                エラーが発生しました
+              </span>
+            </div>
             <p className="text-red-700 mb-4">
               {error || "ノードデータを読み込めませんでした"}
             </p>
             <Link
               to="/nodes"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+              className="business-button"
             >
               ノード管理に戻る
             </Link>
@@ -198,7 +200,7 @@ export default function NodeDetail() {
 
         <h1 className="text-3xl font-bold mb-6">ノード詳細</h1>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="business-card mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h2 className="text-xl font-semibold mb-4">基本情報</h2>
@@ -224,10 +226,10 @@ export default function NodeDetail() {
                     ネットワーク
                   </label>
                   <span
-                    className={`inline-block px-2 py-1 rounded-full text-xs ${
+                    className={`status-badge ${
                       node.network === "TESTNET"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-purple-100 text-purple-800"
+                        ? "status-badge--info"
+                        : "status-badge--primary"
                     }`}
                   >
                     {getNetworkDisplayName(node.network)}
@@ -239,21 +241,21 @@ export default function NodeDetail() {
                   </label>
                   <div className="flex gap-2">
                     <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs ${
+                      className={`status-badge ${
                         node.active
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
+                          ? "status-badge--success"
+                          : "status-badge--inactive"
                       }`}
                     >
                       {node.active ? "使用中" : "停止中"}
                     </span>
                     <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs ${
+                      className={`status-badge ${
                         node.status === "online"
-                          ? "bg-green-100 text-green-800"
+                          ? "status-badge--success"
                           : node.status === "offline"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-gray-100 text-gray-800"
+                            ? "status-badge--error"
+                            : "status-badge--inactive"
                       }`}
                     >
                       {getStatusDisplayName(node.status)}
@@ -327,16 +329,16 @@ export default function NodeDetail() {
           placeholder="このノードに関するメモを入力..."
         />
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="business-card mb-6">
           <h2 className="text-xl font-semibold mb-4">操作</h2>
           <div className="flex gap-3 flex-wrap">
             <button
               onClick={handleHealthCheck}
               disabled={isHealthChecking}
-              className={`px-4 py-2 rounded transition-colors ${
+              className={`business-button ${
                 isHealthChecking
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
               }`}
             >
               {isHealthChecking ? "接続中..." : "接続テスト"}
@@ -344,24 +346,24 @@ export default function NodeDetail() {
             <button
               onClick={handleRefreshInfo}
               disabled={isHealthChecking}
-              className={`px-4 py-2 rounded transition-colors ${
+              className={`business-button success ${
                 isHealthChecking
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-green-500 text-white hover:bg-green-600"
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
               }`}
             >
               {isHealthChecking ? "更新中..." : "情報を更新"}
             </button>
             <button
               onClick={handleToggleActive}
-              className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 transition-colors"
+              className="business-button warning"
             >
               {node.active ? "使用停止" : "使用開始"}
             </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="business-card">
           <h2 className="text-xl font-semibold mb-4 text-red-600">
             危険な操作
           </h2>
@@ -371,7 +373,7 @@ export default function NodeDetail() {
             </p>
             <button
               onClick={handleDeleteNode}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
+              className="business-button danger"
             >
               ノードを削除
             </button>

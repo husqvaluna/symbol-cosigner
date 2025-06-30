@@ -16,7 +16,7 @@ import {
 import type { CreateNodeParams } from "../types/node";
 import type { Route } from "./+types/nodes";
 
-export function meta({}: Route.MetaArgs) {
+export function meta(_: Route.MetaArgs) {
   return [
     { title: "ノード管理 - Symbol Cosigner" },
     { name: "description", content: "接続先ノードの管理" },
@@ -26,7 +26,7 @@ export function meta({}: Route.MetaArgs) {
 export default function Nodes() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nodes] = useAtom(nodesAtom);
-  const [currentNetwork, setCurrentNetwork] = useAtom(currentNetworkAtom);
+  const [currentNetwork] = useAtom(currentNetworkAtom);
   const [filteredNodes] = useAtom(filteredNodesAtom);
   const [nodeStats] = useAtom(nodeStatsAtom);
   const [, addNode] = useAtom(addNodeAtom);
@@ -39,7 +39,7 @@ export default function Nodes() {
     if (nodes.length === 0) {
       initializePresetNodes();
     }
-  }, [nodes.length]);
+  }, [nodes.length, initializePresetNodes]);
 
   // 現在のネットワークのノード一覧
   const currentNetworkNodes = filteredNodes.filter(
@@ -82,43 +82,48 @@ export default function Nodes() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
-      <main className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">ノード管理</h1>
-            <p className="text-gray-600 mt-1">
-              総ノード数: {nodeStats.total} / アクティブ: {nodeStats.active} /
-              オンライン: {nodeStats.online}
-            </p>
+      <main className="mobile-layout md:desktop-layout py-6">
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                ノード管理
+              </h1>
+              <p className="text-sm text-gray-600">
+                合計 {nodeStats.total} 件（アクティブ: {nodeStats.active}{" "}
+                件、オンライン: {nodeStats.online} 件）
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-0">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="business-button primary"
+              >
+                ノード追加
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-          >
-            新しいノードを追加
-          </button>
         </div>
 
         <div className="mb-6">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
+              type="button"
               onClick={() => handleNetworkSwitch("TESTNET")}
-              className={`px-4 py-2 rounded transition-colors ${
-                currentNetwork === "TESTNET"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+              className={`business-button ${
+                currentNetwork === "TESTNET" ? "primary" : "secondary"
               }`}
             >
               テストネット ({nodeStats.testnet})
             </button>
             <button
+              type="button"
               onClick={() => handleNetworkSwitch("MAINNET")}
-              className={`px-4 py-2 rounded transition-colors ${
-                currentNetwork === "MAINNET"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+              className={`business-button ${
+                currentNetwork === "MAINNET" ? "primary" : "secondary"
               }`}
             >
               メインネット ({nodeStats.mainnet})
@@ -126,93 +131,102 @@ export default function Nodes() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">
-              {currentNetwork === "TESTNET" ? "テストネット" : "メインネット"}{" "}
-              ノード
-            </h2>
-            {currentNetworkNodes.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p className="mb-4">
-                  {currentNetwork}のノードが登録されていません
-                </p>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                >
-                  最初のノードを追加
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {currentNetworkNodes.map((node) => (
-                  <div
-                    key={node.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                            {node.url.replace("https://", "")}
-                          </code>
-                          {node.active && (
-                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                              使用中
-                            </span>
-                          )}
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full ${
-                              node.status === "online"
-                                ? "bg-green-100 text-green-800"
-                                : node.status === "offline"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {node.status === "online"
-                              ? "オンライン"
-                              : node.status === "offline"
-                                ? "オフライン"
-                                : "不明"}
-                          </span>
-                          {node.responseTime && (
-                            <span className="text-xs text-gray-500">
-                              {node.responseTime}ms
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          {node.memo || node.friendlyName || "ノード情報なし"}
-                        </div>
-                        {node.version && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            バージョン: {node.version}
-                          </div>
-                        )}
+        {currentNetworkNodes.length > 0 ? (
+          <div className="space-y-4">
+            {currentNetworkNodes.map((node) => (
+              <div key={node.id} className="business-card">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    {/* ヘッダー */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      {node.active && (
+                        <span className="status-badge success">使用中</span>
+                      )}
+                      <span
+                        className={`status-badge ${
+                          node.status === "online"
+                            ? "success"
+                            : node.status === "offline"
+                              ? "danger"
+                              : "neutral"
+                        }`}
+                      >
+                        {node.status === "online"
+                          ? "オンライン"
+                          : node.status === "offline"
+                            ? "オフライン"
+                            : "不明"}
+                      </span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {currentNetwork === "TESTNET"
+                          ? "テストネット"
+                          : "メインネット"}
+                        ノード
+                      </span>
+                    </div>
+
+                    {/* ノードURL */}
+                    <div className="font-mono text-sm text-gray-900 mb-2 break-all">
+                      {node.url.replace("https://", "")}
+                    </div>
+
+                    {/* メモ・ノード名 */}
+                    {(node.memo || node.friendlyName) && (
+                      <div className="text-sm text-gray-600 mb-2">
+                        {node.memo || node.friendlyName}
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleToggleActive(node.id)}
-                          className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200 transition-colors"
-                        >
-                          {node.active ? "使用停止" : "使用開始"}
-                        </button>
-                        <Link
-                          to={`/nodes/${node.id}`}
-                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
-                        >
-                          詳細
-                        </Link>
-                      </div>
+                    )}
+
+                    {/* 詳細情報 */}
+                    <div className="text-xs text-gray-500 space-x-4">
+                      {node.version && <span>バージョン: {node.version}</span>}
+                      {node.responseTime && (
+                        <span>応答時間: {node.responseTime}ms</span>
+                      )}
+                      {node.createdAt && (
+                        <span>
+                          作成: {new Date(node.createdAt).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
                   </div>
-                ))}
+
+                  {/* アクションボタン */}
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleActive(node.id)}
+                      className={`business-button ${
+                        node.active ? "secondary" : "primary"
+                      }`}
+                    >
+                      {node.active ? "使用停止" : "使用開始"}
+                    </button>
+                    <Link
+                      to={`/nodes/${node.id}`}
+                      className="business-button secondary"
+                    >
+                      詳細
+                    </Link>
+                  </div>
+                </div>
               </div>
-            )}
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="business-card text-center py-12">
+            <div className="text-gray-500 text-lg mb-4">
+              {currentNetwork}のノードが登録されていません
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="business-button primary"
+            >
+              最初のノードを追加
+            </button>
+          </div>
+        )}
 
         {/* ノード追加モーダル */}
         <NodeModal
