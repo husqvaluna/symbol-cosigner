@@ -1,5 +1,3 @@
-// import type { Route } from "./+types/nodes.$id";
-
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
@@ -12,7 +10,6 @@ import {
   setActiveNodeAtom,
   updateNodeAtom,
 } from "../store/nodes";
-import type { Node } from "../types/node";
 
 export function meta({ params }: any) {
   return [

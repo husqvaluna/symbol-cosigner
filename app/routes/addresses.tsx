@@ -6,6 +6,7 @@ import { Navigation } from "../components/navigation";
 import {
   addAddressAtom,
   addressStatsAtom,
+  clearAllAddressesAtom,
   filteredAddressesAtom,
   setActiveAddressAtom,
 } from "../store/addresses";
@@ -26,6 +27,7 @@ export default function Addresses() {
   const [stats] = useAtom(addressStatsAtom);
   const [, addAddress] = useAtom(addAddressAtom);
   const [, setActiveAddress] = useAtom(setActiveAddressAtom);
+  const [, clearAllAddresses] = useAtom(clearAllAddressesAtom);
 
   // モーダルを開く
   const handleOpenModal = () => {
@@ -73,6 +75,26 @@ export default function Addresses() {
     }
   };
 
+  // 全アドレスクリア処理
+  const handleClearAllAddresses = () => {
+    if (
+      confirm(
+        "全てのアドレスを削除しますか？この操作は元に戻せません。",
+      )
+    ) {
+      try {
+        clearAllAddresses();
+      } catch (error) {
+        console.error("アドレスクリアエラー:", error);
+        alert(
+          error instanceof Error
+            ? error.message
+            : "アドレスのクリアに失敗しました",
+        );
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
@@ -87,12 +109,22 @@ export default function Addresses() {
                 合計 {stats.total} 件（アクティブ: {stats.active} 件）
               </p>
             </div>
-            <button
-              onClick={handleOpenModal}
-              className="business-button primary mt-3 sm:mt-0"
-            >
-              アドレス追加
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2 mt-3 sm:mt-0">
+              <button
+                onClick={handleOpenModal}
+                className="business-button primary"
+              >
+                アドレス追加
+              </button>
+              {stats.total > 0 && (
+                <button
+                  onClick={handleClearAllAddresses}
+                  className="business-button danger"
+                >
+                  全てクリア
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -111,19 +143,19 @@ export default function Addresses() {
                         署名アドレス
                       </span>
                     </div>
-                    
+
                     {/* アドレス */}
                     <div className="font-mono text-sm text-gray-900 mb-2 break-all">
                       {addr.address}
                     </div>
-                    
+
                     {/* メモ */}
                     {addr.memo && (
                       <div className="text-sm text-gray-600 mb-2">
                         {addr.memo}
                       </div>
                     )}
-                    
+
                     {/* 日付情報 */}
                     <div className="text-xs text-gray-500 space-x-4">
                       <span>
@@ -136,15 +168,9 @@ export default function Addresses() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* アクションボタン */}
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <Link
-                      to={`/addresses/${addr.address}`}
-                      className="business-button secondary"
-                    >
-                      詳細
-                    </Link>
                     <button
                       onClick={() =>
                         handleToggleActive(addr.address, addr.active)
@@ -156,6 +182,12 @@ export default function Addresses() {
                     >
                       {addr.active ? "使用停止" : "使用開始"}
                     </button>
+                    <Link
+                      to={`/addresses/${addr.address}`}
+                      className="business-button secondary"
+                    >
+                      詳細
+                    </Link>
                   </div>
                 </div>
               </div>

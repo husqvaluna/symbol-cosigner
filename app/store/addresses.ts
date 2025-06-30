@@ -246,3 +246,10 @@ export const setAddressFilterAtom = atom(
 export const resetAddressFilterAtom = atom(null, (_get, set) => {
   set(addressFilterAtom, {});
 });
+
+/**
+ * 全アドレスクリアアクション
+ */
+export const clearAllAddressesAtom = atom(null, (_get, set) => {
+  set(addressesAtom, []);
+});

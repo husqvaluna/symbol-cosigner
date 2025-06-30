@@ -193,18 +193,18 @@ export default function Nodes() {
                         )}
                       </div>
                       <div className="flex gap-2">
-                        <Link
-                          to={`/nodes/${node.id}`}
-                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
-                        >
-                          詳細
-                        </Link>
                         <button
                           onClick={() => handleToggleActive(node.id)}
                           className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200 transition-colors"
                         >
                           {node.active ? "使用停止" : "使用開始"}
                         </button>
+                        <Link
+                          to={`/nodes/${node.id}`}
+                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
+                        >
+                          詳細
+                        </Link>
                       </div>
                     </div>
                   </div>
