@@ -1,6 +1,7 @@
 import { useAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { MemoEditor } from "../components/MemoEditor";
 import { Navigation } from "../components/navigation";
 import {
   removeAddressAtom,
@@ -27,23 +28,13 @@ export default function AddressDetail() {
   const [, updateAddress] = useAtom(updateAddressAtom);
   const [, removeAddress] = useAtom(removeAddressAtom);
 
-  // ローカル状態
-  const [memo, setMemo] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
 
-  // アドレスIDを設定し、メモを初期化
+  // アドレスIDを設定
   useEffect(() => {
     if (address) {
       setSelectedAddressId(address);
     }
   }, [address, setSelectedAddressId]);
-
-  // addressDataが変更されたときにメモを更新
-  useEffect(() => {
-    if (addressData) {
-      setMemo(addressData.memo || "");
-    }
-  }, [addressData]);
 
   // アドレスが見つからない場合
   if (!address) {
@@ -89,25 +80,19 @@ export default function AddressDetail() {
   }
 
   // メモ保存処理
-  const handleSaveMemo = () => {
-    try {
-      updateAddress({
-        address: addressData.address,
-        memo: memo.trim(),
-      });
-      setIsEditing(false);
-    } catch (error) {
-      console.error("メモ更新エラー:", error);
-      alert(
-        error instanceof Error ? error.message : "メモの更新に失敗しました",
-      );
-    }
-  };
-
-  // メモ編集キャンセル
-  const handleCancelEdit = () => {
-    setMemo(addressData.memo || "");
-    setIsEditing(false);
+  const handleSaveMemo = async (memo: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      try {
+        updateAddress({
+          address: addressData!.address,
+          memo,
+        });
+        resolve();
+      } catch (error) {
+        console.error("メモ更新エラー:", error);
+        reject(error);
+      }
+    });
   };
 
   // アドレス削除処理
@@ -236,52 +221,11 @@ export default function AddressDetail() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">メモ</h2>
-          {isEditing ? (
-            <>
-              <textarea
-                className="w-full p-3 border rounded-lg resize-none"
-                rows={4}
-                placeholder="このアドレスに関するメモを入力..."
-                value={memo}
-                onChange={(e) => setMemo(e.target.value)}
-              />
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={handleSaveMemo}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                >
-                  保存
-                </button>
-                <button
-                  onClick={handleCancelEdit}
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition-colors"
-                >
-                  キャンセル
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="w-full p-3 border rounded-lg bg-gray-50 min-h-[100px]">
-                {addressData.memo || (
-                  <span className="text-gray-500">
-                    メモが設定されていません
-                  </span>
-                )}
-              </div>
-              <div className="mt-3">
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                >
-                  編集
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <MemoEditor
+          initialMemo={addressData.memo || ""}
+          onSave={handleSaveMemo}
+          placeholder="このアドレスに関するメモを入力..."
+        />
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4 text-red-600">

@@ -3,6 +3,7 @@
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { MemoEditor } from "../components/MemoEditor";
 import { Navigation } from "../components/navigation";
 import {
   nodesAtom,
@@ -30,9 +31,6 @@ export default function NodeDetail() {
   const [, performHealthCheck] = useAtom(performNodeHealthCheckAtom);
 
   // 状態管理
-  const [memo, setMemo] = useState("");
-  const [originalMemo, setOriginalMemo] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isHealthChecking, setIsHealthChecking] = useState(false);
 
@@ -50,11 +48,9 @@ export default function NodeDetail() {
     }
   }, [id, node, nodes.length]);
 
-  // メモの初期値設定
+  // エラーリセット
   useEffect(() => {
     if (node) {
-      setMemo(node.memo || "");
-      setOriginalMemo(node.memo || "");
       setError(null);
     }
   }, [node]);
@@ -93,30 +89,11 @@ export default function NodeDetail() {
   }
 
   // メモ保存機能
-  const handleSaveMemo = async () => {
-    if (memo === originalMemo) return;
-
-    setIsLoading(true);
-    try {
-      await updateNode({
-        id: id!,
-        memo: memo.trim(),
-      });
-      setOriginalMemo(memo.trim());
-      alert("メモを保存しました");
-    } catch (error) {
-      console.error("メモ保存エラー:", error);
-      alert(
-        error instanceof Error ? error.message : "メモの保存に失敗しました",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // メモキャンセル機能
-  const handleCancelMemo = () => {
-    setMemo(originalMemo);
+  const handleSaveMemo = async (memo: string) => {
+    await updateNode({
+      id: id!,
+      memo,
+    });
   };
 
   // ヘルスチェック機能
@@ -347,41 +324,11 @@ export default function NodeDetail() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">メモ</h2>
-          <textarea
-            className="w-full p-3 border rounded-lg resize-none"
-            rows={4}
-            placeholder="このノードに関するメモを入力..."
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            disabled={isLoading}
-          />
-          <div className="mt-3 flex gap-2">
-            <button
-              onClick={handleSaveMemo}
-              disabled={memo === originalMemo || isLoading}
-              className={`px-4 py-2 rounded transition-colors ${
-                memo === originalMemo || isLoading
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
-              }`}
-            >
-              {isLoading ? "保存中..." : "保存"}
-            </button>
-            <button
-              onClick={handleCancelMemo}
-              disabled={memo === originalMemo || isLoading}
-              className={`px-4 py-2 rounded transition-colors ${
-                memo === originalMemo || isLoading
-                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-gray-300 text-gray-700 hover:bg-gray-400"
-              }`}
-            >
-              キャンセル
-            </button>
-          </div>
-        </div>
+        <MemoEditor
+          initialMemo={node.memo || ""}
+          onSave={handleSaveMemo}
+          placeholder="このノードに関するメモを入力..."
+        />
 
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">操作</h2>
