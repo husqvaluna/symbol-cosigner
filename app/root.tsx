@@ -25,10 +25,27 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+        {/* PWA related meta tags */}
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Symbol DevToys" />
+        <meta name="application-name" content="Symbol DevToys" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+
+        {/* PWA Icon */}
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />
+        <link rel="manifest" href="/manifest.webmanifest" />
+
         <Meta />
         <Links />
       </head>
