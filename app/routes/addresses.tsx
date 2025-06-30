@@ -74,96 +74,106 @@ export default function Addresses() {
   };
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <Navigation />
-      <main className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">アドレス管理</h1>
-            <p className="text-gray-600 mt-1">
-              合計 {stats.total} 件（アクティブ: {stats.active} 件）
-            </p>
+      <main className="mobile-layout md:desktop-layout py-6">
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+                アドレス管理
+              </h1>
+              <p className="text-sm text-gray-600">
+                合計 {stats.total} 件（アクティブ: {stats.active} 件）
+              </p>
+            </div>
+            <button
+              onClick={handleOpenModal}
+              className="business-button primary mt-3 sm:mt-0"
+            >
+              アドレス追加
+            </button>
           </div>
-          <button
-            onClick={handleOpenModal}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-          >
-            新しいアドレスを追加
-          </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">登録済みアドレス</h2>
-            <div className="space-y-4">
-              {addresses.length > 0 ? (
-                addresses.map((addr) => (
-                  <div
-                    key={addr.address}
-                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <code className="text-sm font-mono bg-gray-100 px-2 py-1 rounded">
-                            {addr.address}
-                          </code>
-                          {addr.active && (
-                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                              使用中
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          {addr.memo || "メモなし"}
-                        </div>
-                        <div className="text-xs text-gray-400 mt-1">
-                          作成日:{" "}
-                          {new Date(addr.createdAt).toLocaleDateString()}
-                          {addr.lastUsedAt && (
-                            <span className="ml-3">
-                              最終使用:{" "}
-                              {new Date(addr.lastUsedAt).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
+        {addresses.length > 0 ? (
+          <div className="space-y-4">
+            {addresses.map((addr) => (
+              <div key={addr.address} className="business-card">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    {/* ヘッダー */}
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      {addr.active && (
+                        <span className="status-badge success">使用中</span>
+                      )}
+                      <span className="text-sm font-medium text-gray-700">
+                        署名アドレス
+                      </span>
+                    </div>
+                    
+                    {/* アドレス */}
+                    <div className="font-mono text-sm text-gray-900 mb-2 break-all">
+                      {addr.address}
+                    </div>
+                    
+                    {/* メモ */}
+                    {addr.memo && (
+                      <div className="text-sm text-gray-600 mb-2">
+                        {addr.memo}
                       </div>
-                      <div className="flex gap-2">
-                        <Link
-                          to={`/addresses/${addr.address}`}
-                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-200 transition-colors"
-                        >
-                          詳細
-                        </Link>
-                        <button
-                          onClick={() =>
-                            handleToggleActive(addr.address, addr.active)
-                          }
-                          className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm hover:bg-blue-200 transition-colors"
-                          disabled={addr.active} // アクティブなアドレスは停止不可（現時点では）
-                        >
-                          {addr.active ? "使用停止" : "使用開始"}
-                        </button>
-                      </div>
+                    )}
+                    
+                    {/* 日付情報 */}
+                    <div className="text-xs text-gray-500 space-x-4">
+                      <span>
+                        作成: {new Date(addr.createdAt).toLocaleDateString()}
+                      </span>
+                      {addr.lastUsedAt && (
+                        <span>
+                          最終使用: {new Date(addr.lastUsedAt).toLocaleDateString()}
+                        </span>
+                      )}
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-12">
-                  <div className="text-gray-500 text-lg mb-4">
-                    アドレスが登録されていません
+                  
+                  {/* アクションボタン */}
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Link
+                      to={`/addresses/${addr.address}`}
+                      className="business-button secondary"
+                    >
+                      詳細
+                    </Link>
+                    <button
+                      onClick={() =>
+                        handleToggleActive(addr.address, addr.active)
+                      }
+                      className={`business-button ${
+                        addr.active ? "secondary" : "primary"
+                      }`}
+                      disabled={addr.active}
+                    >
+                      {addr.active ? "使用停止" : "使用開始"}
+                    </button>
                   </div>
-                  <button
-                    onClick={handleOpenModal}
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-                  >
-                    最初のアドレスを追加
-                  </button>
                 </div>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
-        </div>
+        ) : (
+          <div className="business-card text-center py-12">
+            <div className="text-gray-500 text-lg mb-4">
+              アドレスが登録されていません
+            </div>
+            <button
+              onClick={handleOpenModal}
+              className="business-button primary"
+            >
+              最初のアドレスを追加
+            </button>
+          </div>
+        )}
 
         {/* アドレス追加モーダル */}
         <AddressModal

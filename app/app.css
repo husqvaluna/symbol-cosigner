@@ -4,13 +4,169 @@
   --font-sans:
     "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* 業務用カラーパレット */
+  --color-primary: #1e40af;
+  --color-primary-dark: #1e3a8a;
+  --color-primary-light: #3b82f6;
+
+  --color-success: #16a34a;
+  --color-success-light: #22c55e;
+  --color-success-bg: #f0fdf4;
+
+  --color-warning: #ea580c;
+  --color-warning-light: #f97316;
+  --color-warning-bg: #fff7ed;
+
+  --color-danger: #dc2626;
+  --color-danger-light: #ef4444;
+  --color-danger-bg: #fef2f2;
+
+  --color-neutral: #6b7280;
+  --color-neutral-light: #9ca3af;
+  --color-neutral-bg: #f9fafb;
+
+  /* モバイル向けサイズ */
+  --touch-target: 44px;
+  --mobile-padding: 16px;
+  --mobile-gap: 12px;
 }
 
 html,
 body {
-  @apply bg-white dark:bg-gray-950;
+  @apply bg-neutral-50 text-gray-900;
+  font-size: 16px; /* モバイル最小サイズ */
+  line-height: 1.5;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+
+/* 業務用コンポーネントベーススタイル */
+.business-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+  min-height: var(--touch-target);
+
+  @media (prefers-color-scheme: dark) {
+    @apply bg-gray-800 border-gray-700;
+  }
+}
+
+.business-button {
+  @apply inline-flex items-center justify-center px-4 py-3 text-sm font-medium rounded-lg transition-colors;
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
+
+  &.primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800;
+  }
+
+  &.secondary {
+    @apply bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300;
+
+    @media (prefers-color-scheme: dark) {
+      @apply bg-gray-700 text-gray-200 hover:bg-gray-600 active:bg-gray-500;
+    }
+  }
+
+  &.success {
+    @apply bg-green-600 text-white hover:bg-green-700 active:bg-green-800;
+  }
+
+  &.warning {
+    @apply bg-orange-600 text-white hover:bg-orange-700 active:bg-orange-800;
+  }
+
+  &.danger {
+    @apply bg-red-600 text-white hover:bg-red-700 active:bg-red-800;
+  }
+}
+
+.status-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+
+  &.success {
+    @apply bg-green-100 text-green-800;
+
+    @media (prefers-color-scheme: dark) {
+      @apply bg-green-900 text-green-200;
+    }
+  }
+
+  &.warning {
+    @apply bg-yellow-100 text-yellow-800;
+
+    @media (prefers-color-scheme: dark) {
+      @apply bg-yellow-900 text-yellow-200;
+    }
+  }
+
+  &.danger {
+    @apply bg-red-100 text-red-800;
+
+    @media (prefers-color-scheme: dark) {
+      @apply bg-red-900 text-red-200;
+    }
+  }
+
+  &.neutral {
+    @apply bg-gray-100 text-gray-800;
+
+    @media (prefers-color-scheme: dark) {
+      @apply bg-gray-700 text-gray-200;
+    }
+  }
+}
+
+/* レスポンシブレイアウト */
+.mobile-layout {
+  @apply px-4 pb-20; /* 下部タブバー分の余白 */
+}
+
+.desktop-layout {
+  @apply max-w-7xl mx-auto px-6;
+}
+
+/* タブバー */
+.tab-bar {
+  @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50;
+
+  @media (prefers-color-scheme: dark) {
+    @apply bg-gray-900 border-gray-700;
+  }
+}
+
+.tab-item {
+  @apply flex flex-col items-center justify-center p-2 text-xs font-medium transition-colors;
+  min-height: var(--touch-target);
+
+  &.active {
+    @apply text-blue-600;
+
+    @media (prefers-color-scheme: dark) {
+      @apply text-blue-400;
+    }
+  }
+
+  &:not(.active) {
+    @apply text-gray-500 hover:text-gray-700;
+
+    @media (prefers-color-scheme: dark) {
+      @apply text-gray-400 hover:text-gray-300;
+    }
+  }
+}
+
+/* アクセシビリティ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
