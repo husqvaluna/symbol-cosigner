@@ -7,7 +7,7 @@ import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Symbol Cosigner - ホーム" },
+    { title: "Symbol Cosigner" },
     { name: "description", content: "Symbol Cosigner アプリケーション" },
   ];
 }

@@ -10,6 +10,19 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 
+// @ts-ignore
+// import { registerSW } from 'virtual:pwa-register';
+// const updateSW = registerSW({
+//   onNeedRefresh() {
+//     if (confirm("New content available. Reload?")) {
+//       updateSW(true);
+//     }
+//   },
+//   onOfflineReady() {
+//     console.log("offline ready");
+//   },
+// });
+
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
@@ -28,15 +41,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <html>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 
         {/* PWA related meta tags */}
         <meta name="theme-color" content="#ffffff" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Symbol DevToys" />
-        <meta name="application-name" content="Symbol DevToys" />
+        <meta name="apple-mobile-web-app-title" content="Symbol Cosigner" />
+        <meta name="application-name" content="Symbol Cosigner" />
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta name="msapplication-config" content="/browserconfig.xml" />
 
