@@ -110,6 +110,8 @@ export function AddressModal({ isOpen, onClose, onSubmit }: AddressModalProps) {
                     ? "border-green-300 bg-green-50"
                     : "border-gray-300"
               }`}
+              autoComplete="username"
+              minLength={39}
               maxLength={45} // ハイフン付きの最大長
             />
             {address && validationResult.error && (

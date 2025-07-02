@@ -222,6 +222,7 @@ export function PrivateKeyModal({
                 placeholder="64文字の16進数を入力してください"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"
                 maxLength={64}
+                autoComplete="current-password"
                 disabled={isSigning}
               />
               <button
